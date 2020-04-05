@@ -22,12 +22,16 @@ void update_mainmenu(NativeMenu::Menu& menu, CTurboScript& context) {
     menu.Title("Turbo Fix");
     menu.Subtitle(std::string("~b~") + Constants::DisplayVersion);
 
-    menu.BoolOption("Enable", context.Settings().Main.Enable);
+    menu.BoolOption("Enable", context.Settings().Main.Enable,
+        { "Enable or disable the entire script." });
 
-    menu.MenuOption("Configs", "configsmenu");
+    menu.MenuOption("Configs", "configsmenu",
+        { "An overview of configurations available." });
 
     CConfig* activeConfig = context.ActiveConfig();
-    menu.MenuOption(fmt::format("Active config: {}", activeConfig ? activeConfig->Name : "None"), "editconfigmenu");
+    menu.MenuOption(fmt::format("Active config: {}", activeConfig ? activeConfig->Name : "None"),
+        "editconfigmenu", 
+        { "Enter to edit the current configuration." });
 }
 
 void update_configsmenu(NativeMenu::Menu& menu, CTurboScript& context) {
@@ -72,12 +76,27 @@ void update_editconfigmenu(NativeMenu::Menu& menu, CTurboScript& context) {
         return;
     }
 
-    menu.FloatOption("RPM Spool Start", config->RPMSpoolStart, 0.0f, 1.0f, 0.01f);
-    menu.FloatOption("RPM Spool End", config->RPMSpoolEnd, 0.0f, 1.0f, 0.01f);
-    menu.FloatOption("Min boost", config->MinBoost, -1.0f, 1.0f, 0.01f);
-    menu.FloatOption("Max boost", config->MaxBoost, -1.0f, 1.0f, 0.01f);
-    menu.FloatOption("Spool rate", config->SpoolRate, 0.0f, 1.0f, 0.00005f);
-    menu.FloatOption("Unspool rate", config->UnspoolRate, 0.0f, 1.0f, 0.00005f);
+    menu.FloatOption("RPM Spool Start", config->RPMSpoolStart, 0.0f, 1.0f, 0.01f,
+        { "At what RPM the turbo starts spooling up.",
+          "0.2 RPM is idle."});
+
+    menu.FloatOption("RPM Spool End", config->RPMSpoolEnd, 0.0f, 1.0f, 0.01f,
+        { "At what RPM the turbo spooling rate is maximal.",
+          "1.0 RPM is rev limit."});
+
+    menu.FloatOption("Min boost", config->MinBoost, -1.0f, 1.0f, 0.01f, 
+        { "What the idle boost/vacuum is." });
+
+    menu.FloatOption("Max boost", config->MaxBoost, -1.0f, 1.0f, 0.01f,
+        { "What full boost is." });
+
+    menu.FloatOption("Spool rate", config->SpoolRate, 0.0f, 1.0f, 0.00005f,
+        { "How fast the turbo spools up, in part per 1 second.",
+          "So 0.5 is it spools up to half its max after 1 second.",
+          "0.999 is almost instant. Keep under 1.0." });
+
+    menu.FloatOption("Unspool rate", config->UnspoolRate, 0.0f, 1.0f, 0.00005f,
+        { "How fast the turbo slows down. Calculation is same as above." });
 
     if (menu.Option("Save changes")) {
         config->Write();
@@ -92,6 +111,11 @@ void update_editconfigmenu(NativeMenu::Menu& menu, CTurboScript& context) {
 
         UI::Notify("Enter model(s).", true);
         std::string newModel = UI::GetKeyboardResult();
+
+        if (newName.empty() || newModel.empty()) {
+            UI::Notify("No config name or model name entered. Not saving anything.", true);
+            return;
+        }
 
         if (config->Write(newName, newModel))
             UI::Notify("Saved as new configuration", true);

@@ -28,8 +28,10 @@ void UI::Notify(const std::string& message, bool removePrevious) {
 }
 
 std::string UI::GetKeyboardResult() {
+    WAIT(1);
     GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(true, "FMMC_KEY_TIP8", "", "", "", "", "", 127);
-    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) WAIT(0);
+    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) 
+        WAIT(0);
     if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
         UI::Notify("Cancelled input", true);
         return std::string();

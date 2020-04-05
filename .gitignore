@@ -32,3 +32,5 @@ packages.config
 Server/
 *.TMP
 doc/changelog.pdf
+
+README.pdf

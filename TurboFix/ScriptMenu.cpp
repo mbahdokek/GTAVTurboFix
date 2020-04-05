@@ -90,12 +90,12 @@ void update_editconfigmenu(NativeMenu::Menu& menu, CTurboScript& context) {
     menu.FloatOption("Max boost", config->MaxBoost, -1.0f, 1.0f, 0.01f,
         { "What full boost is." });
 
-    menu.FloatOption("Spool rate", config->SpoolRate, 0.0f, 1.0f, 0.00005f,
+    menu.FloatOption("Spool rate", config->SpoolRate, 0.01f, 0.99999f, 0.00005f,
         { "How fast the turbo spools up, in part per 1 second.",
           "So 0.5 is it spools up to half its max after 1 second.",
           "0.999 is almost instant. Keep under 1.0." });
 
-    menu.FloatOption("Unspool rate", config->UnspoolRate, 0.0f, 1.0f, 0.00005f,
+    menu.FloatOption("Unspool rate", config->UnspoolRate, 0.01f, 0.99999f, 0.00005f,
         { "How fast the turbo slows down. Calculation is same as above." });
 
     if (menu.Option("Save changes")) {

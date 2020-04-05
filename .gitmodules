@@ -1,0 +1,9 @@
+[submodule "thirdparty/simpleini"]
+	path = thirdparty/simpleini
+	url = https://github.com/brofield/simpleini
+[submodule "thirdparty/GTAVMenuBase"]
+	path = thirdparty/GTAVMenuBase
+	url = https://github.com/E66666666/GTAVMenuBase
+[submodule "thirdparty/fmt"]
+	path = thirdparty/fmt
+	url = https://github.com/fmtlib/fmt

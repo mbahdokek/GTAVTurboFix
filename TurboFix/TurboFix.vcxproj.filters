@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="DllMain.cpp" />
+    <ClCompile Include="Memory\VehicleExtensions.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\NativeMemory.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\Logger.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\FileVersion.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\Paths.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="TurboFix.cpp" />
+    <ClCompile Include="ScriptSettings.cpp" />
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="ScriptMenu.cpp" />
+    <ClCompile Include="Util\String.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menukeyboard.cpp">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menumemutils.cpp">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menusettings.cpp">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menu.cpp">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menucontrols.cpp">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\fmt\src\format.cc">
+      <Filter>ThirdParty\fmt</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\UI.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="TurboScript.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Util">
+      <UniqueIdentifier>{bdd0f1cc-7b41-489b-babc-2a261f5d2fd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory">
+      <UniqueIdentifier>{e138ef42-d8b3-4af0-bdc2-d558c48cd342}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty">
+      <UniqueIdentifier>{b73ea016-c0e1-4b40-b6bb-5465398c7704}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Menu">
+      <UniqueIdentifier>{c8b2b130-a6aa-456a-b13e-953b855d0cbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\fmt">
+      <UniqueIdentifier>{553a292e-ab0e-42df-8194-0697cb1e9ac3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Memory\NativeMemory.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\VehicleExtensions.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.hpp" />
+    <ClInclude Include="Memory\Offsets.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\Versions.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Logger.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\FileVersion.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Paths.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="TurboFix.hpp" />
+    <ClInclude Include="ScriptSettings.hpp" />
+    <ClInclude Include="Config.hpp" />
+    <ClInclude Include="Util\Math.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Game.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\String.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptMenu.hpp" />
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menukeyboard.h">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menumemutils.hpp">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menusettings.h">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menuutils.h">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menu.h">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menucontrols.h">
+      <Filter>ThirdParty\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\UI.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="TurboScript.hpp" />
+  </ItemGroup>
+</Project>

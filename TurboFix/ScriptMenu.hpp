@@ -12,17 +12,28 @@ public:
         CSubmenu(std::string name,
             std::function<void(NativeMenu::Menu&, T&)> menuBody)
             : mName(std::move(name))
-            , mBody(std::move(menuBody)) { }
+            , mBody(std::move(menuBody))
+            , mPred(nullptr) { }
+
+        CSubmenu(std::function<bool(NativeMenu::Menu&)> predicate,
+            std::function<void(NativeMenu::Menu&, T&)> menuBody)
+            : mName() // unused
+            , mBody(std::move(menuBody))
+            , mPred(std::move(predicate)) { }
 
         void Update(NativeMenu::Menu& mbCtx, T& scriptContext) {
+            if (mPred && mPred(mbCtx)) {
+                mBody(mbCtx, scriptContext);
+                return;
+            }
+            
             if (mbCtx.CurrentMenu(mName))
                 mBody(mbCtx, scriptContext);
         }
     private:
         std::string mName;
-        std::string mTitle;
-        std::string mSubtitle;
         std::function<void(NativeMenu::Menu&, T&)> mBody;
+        std::function<bool(NativeMenu::Menu&)> mPred;
     };
 
     CScriptMenu(std::string settingsFile,

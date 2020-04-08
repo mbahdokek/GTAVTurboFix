@@ -34,7 +34,8 @@ void TurboFix::ScriptMain() {
         },
         []() {
             // OnExit: Nope
-        }
+        },
+        BuildMenu()
     );
 
     while(true) {

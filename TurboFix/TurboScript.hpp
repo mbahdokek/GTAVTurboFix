@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <string>
+#include "ScriptMenu.hpp"
 
 class CTurboScript {
 public:

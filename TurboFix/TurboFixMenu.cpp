@@ -1,21 +1,16 @@
 #include "ScriptMenu.hpp"
+#include "TurboFix.hpp"
+#include "TurboScript.hpp"
 #include "Constants.hpp"
+
 #include "Util/UI.hpp"
 
 #include <fmt/format.h>
 
-CScriptMenu::CScriptMenu(std::string settingsFile,
-                         std::function<void()> onInit,
-                         std::function<void()> onExit )
-    : mSettingsFile(std::move(settingsFile)) {
-    mMenuBase.RegisterOnMain(std::move(onInit));
-    mMenuBase.RegisterOnExit(std::move(onExit));
-    mMenuBase.SetFiles(mSettingsFile);
-    mMenuBase.Initialize();
-    mMenuBase.ReadSettings();
-
+std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
+    std::vector<CScriptMenu<CTurboScript>::CSubmenu> submenus;
     /* mainmenu */
-    mSubmenus.emplace_back(mMenuBase, "mainmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
+    submenus.emplace_back("mainmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
         mbCtx.Title("Turbo Fix");
         mbCtx.Subtitle(std::string("~b~") + Constants::DisplayVersion);
 
@@ -29,10 +24,10 @@ CScriptMenu::CScriptMenu(std::string settingsFile,
         mbCtx.MenuOption(fmt::format("Active config: {}", activeConfig ? activeConfig->Name : "None"),
             "editconfigmenu",
             { "Enter to edit the current configuration." });
-    });
+        });
 
     /* mainmenu -> configsmenu */
-    mSubmenus.emplace_back(mMenuBase, "configsmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
+    submenus.emplace_back("configsmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
         mbCtx.Title("Configs");
         mbCtx.Subtitle("Overview");
 
@@ -61,10 +56,10 @@ CScriptMenu::CScriptMenu(std::string settingsFile,
                 mbCtx.OptionPlusPlus(extras);
             }
         }
-    });
+        });
 
     /* mainmenu -> editconfigmenu */
-    mSubmenus.emplace_back(mMenuBase, "editconfigmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
+    submenus.emplace_back("editconfigmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
         mbCtx.Title("Config edit");
         CConfig* config = context.ActiveConfig();
         mbCtx.Subtitle(config ? config->Name : "None");
@@ -122,15 +117,6 @@ CScriptMenu::CScriptMenu(std::string settingsFile,
             context.LoadConfigs();
             context.UpdateActiveConfig();
         }
-    });
-}
-
-void CScriptMenu::Tick(CTurboScript& turboScript) {
-    mMenuBase.CheckKeys();
-
-    for (auto& submenu : mSubmenus) {
-        submenu.Update(turboScript);
-    }
-
-    mMenuBase.EndMenu();
+        });
+    return submenus;
 }

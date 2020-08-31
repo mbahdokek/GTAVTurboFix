@@ -1,4 +1,4 @@
-#include "TurboFix.hpp"
+#include "Script.hpp"
 #include "Constants.hpp"
 
 #include "Memory/Patches.h"

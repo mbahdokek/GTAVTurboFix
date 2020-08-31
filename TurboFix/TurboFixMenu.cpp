@@ -1,5 +1,5 @@
 #include "ScriptMenu.hpp"
-#include "TurboFix.hpp"
+#include "Script.hpp"
 #include "TurboScript.hpp"
 #include "Constants.hpp"
 

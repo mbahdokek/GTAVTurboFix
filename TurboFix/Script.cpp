@@ -1,4 +1,4 @@
-#include "TurboFix.hpp"
+#include "Script.hpp"
 
 #include "TurboScript.hpp"
 #include "ScriptMenu.hpp"

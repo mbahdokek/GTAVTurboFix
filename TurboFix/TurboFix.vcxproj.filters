@@ -53,6 +53,9 @@
     </ClCompile>
     <ClCompile Include="ScriptMenuUtils.cpp" />
     <ClCompile Include="Script.cpp" />
+    <ClCompile Include="TurboFix.cpp">
+      <Filter>API</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Util">

@@ -26,6 +26,8 @@ public:
         return mActiveConfig;
     }
 
+    float GetCurrentBoost();
+
     unsigned LoadConfigs();
     void UpdateActiveConfig();
 

@@ -68,7 +68,7 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NOMINMAX;NOGDI;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TF_EXPORTS;WIN32_LEAN_AND_MEAN;NOMINMAX;NOGDI;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\fmt\include;$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty\GTAVMenuBase;$(SolutionDir)thirdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -96,6 +96,7 @@
     <ClCompile Include="Memory\Patches.cpp" />
     <ClCompile Include="Memory\VehicleExtensions.cpp" />
     <ClCompile Include="ScriptMenuUtils.cpp" />
+    <ClCompile Include="TurboFix.cpp" />
     <ClCompile Include="TurboFixMenu.cpp" />
     <ClCompile Include="TurboScript.cpp" />
     <ClCompile Include="ScriptSettings.cpp" />

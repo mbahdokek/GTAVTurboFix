@@ -70,6 +70,12 @@ void CTurboScript::Tick() {
     }
 }
 
+float CTurboScript::GetCurrentBoost() {
+    if (mActiveConfig)
+        return mExt.GetTurbo(mVehicle);
+    return 0.0f;
+}
+
 unsigned CTurboScript::LoadConfigs() {
     namespace fs = std::filesystem;
 

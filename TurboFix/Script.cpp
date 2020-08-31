@@ -10,9 +10,13 @@
 #include "Util/Paths.hpp"
 
 #include <inc/main.h>
-
+#include <memory>
 
 using namespace TurboFix;
+
+namespace {
+    std::shared_ptr<CTurboScript> scriptInst;
+}
 
 void TurboFix::ScriptMain() {
     const std::string settingsGeneralPath =
@@ -24,7 +28,8 @@ void TurboFix::ScriptMain() {
         Constants::ModDir +
         "\\settings_menu.ini";
 
-    CTurboScript script(settingsGeneralPath);
+    scriptInst = std::make_shared<CTurboScript>(settingsGeneralPath);
+    CTurboScript& script = *scriptInst;
     script.Settings().Load();
     logger.Write(INFO, "Settings loaded");
 
@@ -54,4 +59,8 @@ void TurboFix::ScriptMain() {
         menu.Tick(script);
         WAIT(0);
     }
+}
+
+CTurboScript& TurboFix::GetScript() {
+    return *scriptInst;
 }

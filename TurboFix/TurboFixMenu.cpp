@@ -3,6 +3,8 @@
 #include "TurboScript.hpp"
 #include "Constants.hpp"
 
+#include "Memory/Patches.h"
+
 #include "Util/UI.hpp"
 
 #include <fmt/format.h>
@@ -14,8 +16,10 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.Title("Turbo Fix");
         mbCtx.Subtitle(std::string("~b~") + Constants::DisplayVersion);
 
-        mbCtx.BoolOption("Enable", context.Settings().Main.Enable,
-            { "Enable or disable the entire script." });
+        if (mbCtx.BoolOption("Enable", context.Settings().Main.Enable,
+            { "Enable or disable the entire script." })) {
+            Patches::BoostLimiter(context.Settings().Main.Enable);
+        }
 
         mbCtx.MenuOption("Configs", "configsmenu",
             { "An overview of configurations available." });

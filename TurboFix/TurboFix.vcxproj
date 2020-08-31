@@ -93,6 +93,7 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="Memory\NativeMemory.cpp" />
+    <ClCompile Include="Memory\Patches.cpp" />
     <ClCompile Include="Memory\VehicleExtensions.cpp" />
     <ClCompile Include="TurboFixMenu.cpp" />
     <ClCompile Include="TurboScript.cpp" />
@@ -115,6 +116,9 @@
     <ClInclude Include="Constants.hpp" />
     <ClInclude Include="Memory\NativeMemory.hpp" />
     <ClInclude Include="Memory\Offsets.hpp" />
+    <ClInclude Include="Memory\Patcher.h" />
+    <ClInclude Include="Memory\Patches.h" />
+    <ClInclude Include="Memory\PatternInfo.h" />
     <ClInclude Include="Memory\VehicleExtensions.hpp" />
     <ClInclude Include="Memory\Versions.hpp" />
     <ClInclude Include="TurboScript.hpp" />

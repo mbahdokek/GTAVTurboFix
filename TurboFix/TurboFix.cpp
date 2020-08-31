@@ -4,10 +4,13 @@
 #include "ScriptMenu.hpp"
 #include "Constants.hpp"
 
+#include "Memory/Patches.h"
+
 #include "Util/Logger.hpp"
 #include "Util/Paths.hpp"
 
 #include <inc/main.h>
+
 
 using namespace TurboFix;
 
@@ -27,6 +30,14 @@ void TurboFix::ScriptMain() {
 
     auto loaded = script.LoadConfigs();
     logger.Write(INFO, "%u Configs loaded", loaded);
+
+    if (!Patches::Test()) {
+        logger.Write(ERROR, "[PATCH] Test failed");
+        Patches::Error = true;
+    }
+    else {
+        Patches::BoostLimiter(script.Settings().Main.Enable);
+    }
 
     CScriptMenu menu(settingsMenuPath, 
         []() {

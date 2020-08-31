@@ -1,6 +1,7 @@
 #include "TurboFix.hpp"
 #include "Constants.hpp"
 
+#include "Memory/Patches.h"
 #include "Memory/VehicleExtensions.hpp"
 #include "Memory/Versions.hpp"
 #include "Util/FileVersion.hpp"
@@ -58,12 +59,28 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
                 VehicleExtensions::ChangeVersion(actualVersion);
             }
 
+            Patches::SetPatterns(/*actualVersion*/);
+
             scriptRegister(hInstance, TurboFix::ScriptMain);
 
             logger.Write(INFO, "Script registered");
             break;
         }
         case DLL_PROCESS_DETACH: {
+            logger.Write(INFO, "[PATCH] Restore patches");
+            const uint8_t expected = 1;
+            uint8_t actual = 0;
+
+            if (Patches::BoostLimiter(false))
+                actual++;
+
+            if (actual == expected) {
+                logger.Write(INFO, "[PATCH] Script shut down cleanly");
+            }
+            else {
+                logger.Write(ERROR, "[PATCH] Script shut down with unrestored patches!");
+            }
+
             scriptUnregister(hInstance);
             break;
         }

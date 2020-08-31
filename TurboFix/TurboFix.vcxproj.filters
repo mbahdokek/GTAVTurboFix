@@ -49,6 +49,9 @@
     </ClCompile>
     <ClCompile Include="TurboScript.cpp" />
     <ClCompile Include="TurboFixMenu.cpp" />
+    <ClCompile Include="Memory\Patches.cpp">
+      <Filter>Memory\Patching</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Util">
@@ -65,6 +68,9 @@
     </Filter>
     <Filter Include="ThirdParty\fmt">
       <UniqueIdentifier>{553a292e-ab0e-42df-8194-0697cb1e9ac3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory\Patching">
+      <UniqueIdentifier>{aa06a1f4-2ac0-49ea-b796-487746e91bd7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -125,5 +131,14 @@
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="TurboScript.hpp" />
+    <ClInclude Include="Memory\Patcher.h">
+      <Filter>Memory\Patching</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\PatternInfo.h">
+      <Filter>Memory\Patching</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\Patches.h">
+      <Filter>Memory\Patching</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

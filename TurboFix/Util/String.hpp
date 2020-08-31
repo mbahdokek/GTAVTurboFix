@@ -23,4 +23,6 @@ namespace Util {
     std::string to_lower(std::string s);
 
     std::vector<std::string> split(const std::string& s, char delim);
+
+    std::string ByteArrayToString(uint8_t* byteArray, size_t length);
 }

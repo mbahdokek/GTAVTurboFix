@@ -95,6 +95,7 @@
     <ClCompile Include="Memory\NativeMemory.cpp" />
     <ClCompile Include="Memory\Patches.cpp" />
     <ClCompile Include="Memory\VehicleExtensions.cpp" />
+    <ClCompile Include="ScriptMenuUtils.cpp" />
     <ClCompile Include="TurboFixMenu.cpp" />
     <ClCompile Include="TurboScript.cpp" />
     <ClCompile Include="ScriptSettings.cpp" />
@@ -121,6 +122,7 @@
     <ClInclude Include="Memory\PatternInfo.h" />
     <ClInclude Include="Memory\VehicleExtensions.hpp" />
     <ClInclude Include="Memory\Versions.hpp" />
+    <ClInclude Include="ScriptMenuUtils.h" />
     <ClInclude Include="TurboScript.hpp" />
     <ClInclude Include="ScriptMenu.hpp" />
     <ClInclude Include="ScriptSettings.hpp" />

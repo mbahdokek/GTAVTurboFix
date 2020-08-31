@@ -143,6 +143,6 @@ void CTurboScript::updateTurbo() {
     else
         lerpRate = mActiveConfig->UnspoolRate;
 
-    float newBoost = lerp(currentBoost, now, 1.0f - pow(1.0f - lerpRate, GAMEPLAY::GET_FRAME_TIME()));
+    float newBoost = lerp(currentBoost, now, 1.0f - pow(1.0f - lerpRate, MISC::GET_FRAME_TIME()));
     mExt.SetTurbo(mVehicle, newBoost);
 }

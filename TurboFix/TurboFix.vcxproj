@@ -94,8 +94,8 @@
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="Memory\NativeMemory.cpp" />
     <ClCompile Include="Memory\VehicleExtensions.cpp" />
+    <ClCompile Include="TurboFixMenu.cpp" />
     <ClCompile Include="TurboScript.cpp" />
-    <ClCompile Include="ScriptMenu.cpp" />
     <ClCompile Include="ScriptSettings.cpp" />
     <ClCompile Include="TurboFix.cpp" />
     <ClCompile Include="Util\FileVersion.cpp" />

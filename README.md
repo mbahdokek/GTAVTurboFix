@@ -3,14 +3,20 @@ GTA V Turbo Fix
 
 [![Here's a pic for ya.](https://img.youtube.com/vi/2-IKyusg7mE/0.jpg)](https://www.youtube.com/watch?v=2-IKyusg7mE)
 
+[1.1.0 Preview](https://www.youtube.com/watch?v=6OO_l8Epb5c)
+
 A script for Grand Theft Auto V, that fixes the broken turbo behavior.
 
-Customizable spooling speeds, limits and when it starts doing its thing. Does not change performance significantly, other than being able to offer full boost earlier.
+Customizable spooling speeds, limits and when it starts doing its thing. From version 1.1.0, boost can be set higher than 1.0 and offer significant (unlimited) performance gains.
 
 ## Requirements
 
 * Grand Theft Auto V
 * [ScriptHookV by Alexander Blade](http://www.dev-c.com/gtav/scripthookv/)
+
+## Optional
+
+* [DashHook](https://www.gta5-mods.com/tools/dashhook)
 
 ## Install / Usage
 

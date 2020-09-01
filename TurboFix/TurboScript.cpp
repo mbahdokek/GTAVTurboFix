@@ -124,6 +124,9 @@ void CTurboScript::updateTurbo() {
         return;
 
     float currentBoost = mExt.GetTurbo(mVehicle);
+    currentBoost = std::clamp(currentBoost,
+        mActiveConfig->MinBoost,
+        mActiveConfig->MaxBoost);
 
     // closed throttle: vacuum
     // open throttle: boost ~ RPM * throttle
@@ -150,5 +153,8 @@ void CTurboScript::updateTurbo() {
         lerpRate = mActiveConfig->UnspoolRate;
 
     float newBoost = lerp(currentBoost, now, 1.0f - pow(1.0f - lerpRate, MISC::GET_FRAME_TIME()));
+    newBoost = std::clamp(newBoost, 
+        mActiveConfig->MinBoost,
+        mActiveConfig->MaxBoost);
     mExt.SetTurbo(mVehicle, newBoost);
 }

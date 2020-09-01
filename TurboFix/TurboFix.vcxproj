@@ -90,6 +90,7 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menumemutils.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menusettings.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp" />
+    <ClCompile Include="Compatibility.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="Memory\NativeMemory.cpp" />
@@ -114,6 +115,7 @@
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menumemutils.hpp" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menusettings.h" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menuutils.h" />
+    <ClInclude Include="Compatibility.h" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Constants.hpp" />
     <ClInclude Include="Memory\NativeMemory.hpp" />

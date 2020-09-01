@@ -56,6 +56,9 @@
     <ClCompile Include="TurboFix.cpp">
       <Filter>API</Filter>
     </ClCompile>
+    <ClCompile Include="Compatibility.cpp">
+      <Filter>Compatibility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Util">
@@ -78,6 +81,9 @@
     </Filter>
     <Filter Include="API">
       <UniqueIdentifier>{5d6efb77-0315-4d3e-bb60-374fc9448c67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Compatibility">
+      <UniqueIdentifier>{99b8860a-eccb-462b-aba5-c6127d3ec17d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -151,5 +157,8 @@
       <Filter>API</Filter>
     </ClInclude>
     <ClInclude Include="Script.hpp" />
+    <ClInclude Include="Compatibility.h">
+      <Filter>Compatibility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

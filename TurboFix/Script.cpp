@@ -3,6 +3,7 @@
 #include "TurboScript.hpp"
 #include "ScriptMenu.hpp"
 #include "Constants.hpp"
+#include "Compatibility.h"
 
 #include "Memory/Patches.h"
 
@@ -43,6 +44,8 @@ void TurboFix::ScriptMain() {
     else {
         Patches::BoostLimiter(script.Settings().Main.Enable);
     }
+
+    Compatibility::Setup();
 
     CScriptMenu menu(settingsMenuPath, 
         []() {

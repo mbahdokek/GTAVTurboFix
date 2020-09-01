@@ -1,5 +1,7 @@
 #include "TurboScript.hpp"
 
+#include "TurboFix.h"
+#include "Compatibility.h"
 #include "Constants.hpp"
 #include "Util/Math.hpp"
 #include "Util/Paths.hpp"
@@ -156,5 +158,16 @@ void CTurboScript::updateTurbo() {
     newBoost = std::clamp(newBoost, 
         mActiveConfig->MinBoost,
         mActiveConfig->MaxBoost);
+
+    if (DashHook::Available()) {
+        VehicleDashboardData dashData{};
+        DashHook::GetData(&dashData);
+        float boostNorm = TF_GetNormalizedBoost();
+        dashData.boost = std::clamp(boostNorm, 0.0f, 1.0f);
+        dashData.vacuum = map(boostNorm, -1.0f, 0.0f, 0.0f, 1.0f);
+        dashData.vacuum = std::clamp(dashData.vacuum, 0.0f, 1.0f);
+        DashHook::SetData(dashData);
+    }
+
     mExt.SetTurbo(mVehicle, newBoost);
 }

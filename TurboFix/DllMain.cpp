@@ -15,6 +15,8 @@
 
 #include <filesystem>
 
+#include "Compatibility.h"
+
 namespace fs = std::filesystem;
 
 BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
@@ -81,6 +83,7 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
                 logger.Write(ERROR, "[PATCH] Script shut down with unrestored patches!");
             }
 
+            Compatibility::Release();
             scriptUnregister(hInstance);
             break;
         }

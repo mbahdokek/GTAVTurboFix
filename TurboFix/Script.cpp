@@ -44,7 +44,7 @@ void TurboFix::ScriptMain() {
     else {
         Patches::BoostLimiter(script.Settings().Main.Enable);
     }
-
+    VehicleExtensions::Init();
     Compatibility::Setup();
 
     CScriptMenu menu(settingsMenuPath, 

@@ -34,8 +34,6 @@ public:
 protected:
     void updateTurbo();
 
-    VehicleExtensions mExt;
-
     CScriptSettings mSettings;
     std::vector<CConfig> mConfigs;
     CConfig mDefaultConfig;

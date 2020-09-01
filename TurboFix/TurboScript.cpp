@@ -14,12 +14,13 @@
 #include <filesystem>
 #include <algorithm>
 
+using VExt = VehicleExtensions;
+
 CTurboScript::CTurboScript(const std::string& settingsFile)
     : mSettings(settingsFile)
     , mDefaultConfig{}
     , mVehicle(0)
     , mActiveConfig(nullptr) {
-    mExt.initOffsets();
     mDefaultConfig.Name = "Default";
 }
 
@@ -74,7 +75,7 @@ void CTurboScript::Tick() {
 
 float CTurboScript::GetCurrentBoost() {
     if (mActiveConfig)
-        return mExt.GetTurbo(mVehicle);
+        return VExt::GetTurbo(mVehicle);
     return 0.0f;
 }
 
@@ -125,7 +126,7 @@ void CTurboScript::updateTurbo() {
     if (!VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo))
         return;
 
-    float currentBoost = mExt.GetTurbo(mVehicle);
+    float currentBoost = VExt::GetTurbo(mVehicle);
     currentBoost = std::clamp(currentBoost,
         mActiveConfig->MinBoost,
         mActiveConfig->MaxBoost);
@@ -133,7 +134,7 @@ void CTurboScript::updateTurbo() {
     // closed throttle: vacuum
     // open throttle: boost ~ RPM * throttle
 
-    float rpm = mExt.GetCurrentRPM(mVehicle);
+    float rpm = VExt::GetCurrentRPM(mVehicle);
     rpm = map(rpm, 
         mActiveConfig->RPMSpoolStart, 
         mActiveConfig->RPMSpoolEnd,
@@ -141,7 +142,7 @@ void CTurboScript::updateTurbo() {
         1.0f);
     rpm = std::clamp(rpm, 0.0f, 1.0f);
 
-    float throttle = abs(mExt.GetThrottle(mVehicle));
+    float throttle = abs(VExt::GetThrottle(mVehicle));
 
     float now = throttle * rpm;
     now = map(now, 0.0f, 1.0f, 
@@ -169,5 +170,5 @@ void CTurboScript::updateTurbo() {
         DashHook::SetData(dashData);
     }
 
-    mExt.SetTurbo(mVehicle, newBoost);
+    VExt::SetTurbo(mVehicle, newBoost);
 }

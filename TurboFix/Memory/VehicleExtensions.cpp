@@ -1,13 +1,14 @@
 #include "VehicleExtensions.hpp"
 
-#include <vector>
-#include <functional>
-#include <map>
-
 #include "NativeMemory.hpp"
 #include "Versions.hpp"
 #include "Offsets.hpp"
 #include "../Util/Logger.hpp"
+
+#include <inc/main.h>
+
+#include <vector>
+#include <functional>
 
 // <= b1493: 8  (Top gear = 7)
 // >= b1604: 11 (Top gear = 10)
@@ -19,17 +20,52 @@ namespace {
     template <typename T> T Sign(T val) {
         return static_cast<T>((T{} < val) - (val < T{}));
     }
-}
 
-int findOffset(const std::map<int, int, std::greater<int>> &offsets) {
-    return offsets.lower_bound(g_gameVersion)->second;
-}
+    int rocketBoostActiveOffset = 0;
+    int rocketBoostChargeOffset = 0;
+    int hoverTransformRatioOffset = 0;
+    int hoverTransformRatioLerpOffset = 0;
+    int fuelLevelOffset = 0;
+    int nextGearOffset = 0;
+    int currentGearOffset = 0;
+    int topGearOffset = 0;
+    int gearRatiosOffset = 0;
+    int driveForceOffset = 0;
+    int initialDriveMaxFlatVelOffset = 0;
+    int driveMaxFlatVelOffset = 0;
+    int currentRPMOffset = 0;
+    int clutchOffset = 0;
+    int throttleOffset = 0;
+    int turboOffset = 0;
+    int arenaBoostOffset = 0;
+    int handlingOffset = 0;
+    int lightStatesOffset = 0;
+    int steeringAngleInputOffset = 0;
+    int steeringAngleOffset = 0;
+    int throttlePOffset = 0;
+    int brakePOffset = 0;
+    int handbrakeOffset = 0;
+    int dirtLevelOffset = 0;
+    int engineTempOffset = 0;
+    int dashSpeedOffset = 0;
+    int wheelsPtrOffset = 0;
+    int numWheelsOffset = 0;
+    int modelTypeOffset = 0;
+    int vehicleModelInfoOffset = 0x020;
+    int vehicleFlagsOffset = 0;
 
-VehicleExtensions::VehicleExtensions() {
-    g_gameVersion = getGameVersion();
-    if (g_gameVersion >= G_VER_1_0_1604_0_STEAM) {
-        g_numGears = 11;
-    }
+    int steeringMultOffset = 0;
+
+    // Wheel stuff
+    int wheelHealthOffset = 0;
+    int wheelSuspensionCompressionOffset = 0;
+    int wheelSteeringAngleOffset = 0;
+    int wheelAngularVelocityOffset = 0;
+    int wheelTractionVectorLengthOffset = 0;
+    int wheelPowerOffset = 0;
+    int wheelBrakeOffset = 0;
+    int wheelFlagsOffset = 0;
+    int wheelDownforceOffset = 0;
 }
 
 void VehicleExtensions::ChangeVersion(int version) {
@@ -39,13 +75,18 @@ void VehicleExtensions::ChangeVersion(int version) {
     }
 }
 
+uint8_t VehicleExtensions::GearsAvailable() {
+    return g_numGears;
+}
+
 /*
  * Offsets/patterns done by me might need revision, but they've been checked 
  * against b1180.2 and b877.1 and are okay.
  */
-void VehicleExtensions::initOffsets() {
+void VehicleExtensions::Init() {
     mem::init();
-    uintptr_t addr = mem::FindPattern("\x3A\x91\x00\x00\x00\x00\x74\x00\x84\xD2", "xx????x?xx");
+
+    uintptr_t addr = mem::FindPattern("3A 91 ? ? ? ? 74 ? 84 D2");
     rocketBoostActiveOffset = addr == 0 ? 0 : *(int*)(addr + 2);
     logger.Write(rocketBoostActiveOffset == 0 ? WARN : DEBUG, "Rocket Boost Active Offset: 0x%X", rocketBoostActiveOffset);
 
@@ -118,10 +159,23 @@ void VehicleExtensions::initOffsets() {
     turboOffset = addr == 0 ? 0 : *(int*)(addr + 4);
     logger.Write(turboOffset == 0 ? WARN : DEBUG, "Turbo Offset: 0x%X", turboOffset);
 
+    if (g_gameVersion >= G_VER_1_0_1604_0_STEAM) {
+        // TODO: pattern
+        arenaBoostOffset = turboOffset + 0x30;
+    }
+    else {
+        arenaBoostOffset = 0;
+    }
+
     addr = mem::FindPattern("\x3C\x03\x0F\x85\x00\x00\x00\x00\x48\x8B\x41\x20\x48\x8B\x88",
                             "xxxx????xxxxxxx");
     handlingOffset = addr == 0 ? 0 : *(int*)(addr + 0x16);
     logger.Write(handlingOffset == 0 ? WARN : DEBUG, "Handling Offset: 0x%X", handlingOffset);
+
+    addr = mem::FindPattern("FD 02 DB 08 98 ? ? ? ? 48 8B 5C 24 30");
+    lightStatesOffset = addr == 0 ? 0 : *(int*)(addr - 4) - 1;
+    logger.Write(lightStatesOffset == 0 ? WARN : DEBUG, "Light States Offset: 0x%X", lightStatesOffset);
+    // Or "8A 96 ? ? ? ? 0F B6 C8 84 D2 41", +10 or something (+31 is the engine starting bit), (0x928 starting addr)
 
     addr = mem::FindPattern("\x74\x0A\xF3\x0F\x11\xB3\x1C\x09\x00\x00\xEB\x25", "xxxxxx????xx");
     steeringAngleInputOffset = addr == 0 ? 0 : *(int*)(addr + 6);
@@ -136,8 +190,14 @@ void VehicleExtensions::initOffsets() {
     brakePOffset = addr == 0 ? 0 : *(int*)(addr + 6) + 0x14;
     logger.Write(brakePOffset == 0 ? WARN : DEBUG, "BrakeP Offset: 0x%X", brakePOffset);
 
-    addr = mem::FindPattern("\x44\x88\xA3\x00\x00\x00\x00\x45\x8A\xF4", "xxx????xxx");
-    handbrakeOffset = addr == 0 ? 0 : *(int*)(addr + 3);
+    if (g_gameVersion >= G_VER_1_0_2060_0_STEAM) {
+        addr = mem::FindPattern("8A C2 24 01 C0 E0 04 08 81");
+        handbrakeOffset = addr == 0 ? 0 : *(int*)(addr + 19);
+    }
+    else {
+        addr = mem::FindPattern("\x44\x88\xA3\x00\x00\x00\x00\x45\x8A\xF4", "xxx????xxx");
+        handbrakeOffset = addr == 0 ? 0 : *(int*)(addr + 3);
+    }
     logger.Write(handbrakeOffset == 0 ? WARN : DEBUG, "Handbrake Offset: 0x%X", handbrakeOffset);
 
     addr = mem::FindPattern("\x0F\x29\x7C\x24\x30\x0F\x85\xE3\x00\x00\x00\xF3\x0F\x10\xB9\x68\x09\x00\x00", 
@@ -179,6 +239,10 @@ void VehicleExtensions::initOffsets() {
     wheelFlagsOffset = addr == 0 ? 0 : *(int*)(addr + 7);
     logger.Write(wheelFlagsOffset == 0 ? WARN : DEBUG, "Wheel Flags Offset: 0x%X", wheelFlagsOffset);
 
+    wheelDownforceOffset = addr == 0 ? 0 : *(int*)(addr + 7) + 0x1C;
+    logger.Write(wheelDownforceOffset == 0 ? WARN : DEBUG, "Wheel Downforce Offset: 0x%X", wheelDownforceOffset);
+
+
     addr = mem::FindPattern("\x75\x24\xF3\x0F\x10\x81\xE0\x01\x00\x00\xF3\x0F\x5C\xC1", "xxxxx???xxxx??");
     wheelHealthOffset = addr == 0 ? 0 : *(int*)(addr + 6);
     logger.Write(wheelHealthOffset == 0 ? WARN : DEBUG, "Wheel Health Offset: 0x%X", wheelHealthOffset);
@@ -207,8 +271,8 @@ void VehicleExtensions::initOffsets() {
     wheelPowerOffset = addr == 0 ? 0 : (*(int*)(addr + 3)) + 0x8;
     logger.Write(wheelPowerOffset == 0 ? WARN : DEBUG, "Wheel Power Offset: 0x%X", wheelPowerOffset);
 
-    wheelSmokeOffset = addr == 0 ? 0 : (*(int*)(addr + 3)) - 0x14;
-    logger.Write(wheelSmokeOffset == 0 ? WARN : DEBUG, "Wheel Smoke Offset: 0x%X", wheelSmokeOffset);
+    wheelTractionVectorLengthOffset = addr == 0 ? 0 : (*(int*)(addr + 3)) - 0x14;
+    logger.Write(wheelTractionVectorLengthOffset == 0 ? WARN : DEBUG, "Wheel Traction Vector Length Offset: 0x%X", wheelTractionVectorLengthOffset);
 }
 
 BYTE *VehicleExtensions::GetAddress(Vehicle handle) {
@@ -395,10 +459,41 @@ void VehicleExtensions::SetTurbo(Vehicle handle, float value) {
     *reinterpret_cast<float *>(address + turboOffset) = value;
 }
 
+float VehicleExtensions::GetArenaBoost(Vehicle handle) {
+    if (arenaBoostOffset == 0) return 0.0f;
+    auto address = GetAddress(handle);
+    return address == nullptr ? 0 : *reinterpret_cast<const float*>(address + arenaBoostOffset);
+}
+
+void VehicleExtensions::SetArenaBoost(Vehicle handle, float value) {
+    if (arenaBoostOffset == 0) return;
+    auto address = GetAddress(handle);
+    *reinterpret_cast<float*>(address + arenaBoostOffset) = value;
+}
+
 uint64_t VehicleExtensions::GetHandlingPtr(Vehicle handle) {
     if (handlingOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<uint64_t *>(address + handlingOffset);
+    return *reinterpret_cast<uint64_t*>(address + handlingOffset);
+}
+
+void VehicleExtensions::SetHandlingPtr(Vehicle handle, uint64_t value) {
+    if (handlingOffset == 0) return;
+    auto address = GetAddress(handle);
+    if (address == 0) return;
+    *reinterpret_cast<uint64_t*>(address + handlingOffset) = value;
+}
+
+uint32_t VehicleExtensions::GetLightStates(Vehicle handle) {
+    if (lightStatesOffset == 0) return 0;
+    auto address = GetAddress(handle);
+    return *reinterpret_cast<uint32_t*>(address + lightStatesOffset);
+}
+
+void VehicleExtensions::SetLightStates(Vehicle handle, uint32_t value) {
+    if (lightStatesOffset == 0) return;
+    auto address = GetAddress(handle);
+    *reinterpret_cast<uint32_t*>(address + lightStatesOffset) = value;
 }
 
 float VehicleExtensions::GetSteeringInputAngle(Vehicle handle) {
@@ -494,6 +589,7 @@ uint64_t VehicleExtensions::GetWheelsPtr(Vehicle handle) {
 uint8_t VehicleExtensions::GetNumWheels(Vehicle handle) {
     if (numWheelsOffset == 0) return 0;
     auto address = GetAddress(handle);
+    if (address == 0) return 0;
     return *reinterpret_cast<int *>(address + numWheelsOffset);
 }
 
@@ -766,6 +862,16 @@ std::vector<float> VehicleExtensions::GetWheelRotationSpeeds(Vehicle handle) {
     return speeds;
 }
 
+void VehicleExtensions::SetWheelRotationSpeed(Vehicle handle, uint8_t index, float value) {
+    if (index > GetNumWheels(handle)) return;
+    if (wheelAngularVelocityOffset == 0) return;
+
+    auto wheelPtr = GetWheelsPtr(handle);
+
+    auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * index);
+    *reinterpret_cast<float*>(wheelAddr + wheelAngularVelocityOffset) = value;
+}
+
 std::vector<float> VehicleExtensions::GetTyreSpeeds(Vehicle handle) {
     int numWheels = GetNumWheels(handle);
     std::vector<float> rotationSpeed = GetWheelRotationSpeeds(handle);
@@ -778,26 +884,26 @@ std::vector<float> VehicleExtensions::GetTyreSpeeds(Vehicle handle) {
     return wheelSpeeds;
 }
 
-void VehicleExtensions::SetWheelSkidSmokeEffect(Vehicle handle, uint8_t index, float value) {
+void VehicleExtensions::SetWheelTractionVectorLength(Vehicle handle, uint8_t index, float value) {
     if (index > GetNumWheels(handle)) return;
-    if (wheelSmokeOffset == 0) return;
+    if (wheelTractionVectorLengthOffset == 0) return;
 
     auto wheelPtr = GetWheelsPtr(handle);
 
     auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * index);
-    *reinterpret_cast<float *>(wheelAddr + wheelSmokeOffset) = value;
+    *reinterpret_cast<float *>(wheelAddr + wheelTractionVectorLengthOffset) = value;
 }
 
-std::vector<float> VehicleExtensions::GetWheelSkidSmokeEffect(Vehicle handle) {
+std::vector<float> VehicleExtensions::GetWheelTractionVectorLength(Vehicle handle) {
     auto numWheels = GetNumWheels(handle);
     std::vector<float> values(numWheels);
     auto wheelPtr = GetWheelsPtr(handle);
 
-    if (wheelSmokeOffset == 0) return values;
+    if (wheelTractionVectorLengthOffset == 0) return values;
 
     for (auto i = 0; i < numWheels; i++) {
         auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
-        values[i] = (-*reinterpret_cast<float *>(wheelAddr + wheelSmokeOffset));
+        values[i] = (-*reinterpret_cast<float *>(wheelAddr + wheelTractionVectorLengthOffset));
     }
     return values;
 }
@@ -873,6 +979,40 @@ std::vector<uint16_t> VehicleExtensions::GetWheelFlags(Vehicle handle) {
         flags[i] = *reinterpret_cast<uint16_t *>(wheelAddr + wheelFlagsOffset);
     }
     return flags;
+}
+
+std::vector<float> VehicleExtensions::GetWheelDownforces(Vehicle handle) {
+    auto wheelPtr = GetWheelsPtr(handle);
+    auto numWheels = GetNumWheels(handle);
+    std::vector<float> dfs(numWheels);
+
+    if (wheelDownforceOffset == 0) return dfs;
+
+    for (auto i = 0; i < numWheels; i++) {
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        dfs[i] = *reinterpret_cast<float*>(wheelAddr + 0x220);
+    }
+    return dfs;
+}
+
+uint64_t VehicleExtensions::GetWheelHandlingPtr(Vehicle handle, uint8_t index) {
+    if (handlingOffset == 0) return 0;
+
+    auto wheelPtr = GetWheelsPtr(handle);
+    auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * index);
+
+    return *reinterpret_cast<uint64_t*>(wheelAddr + 0x120);
+}
+
+void VehicleExtensions::SetWheelHandlingPtr(Vehicle handle, uint8_t index, uint64_t value) {
+    if (handlingOffset == 0) return;
+    auto address = GetAddress(handle);
+    if (address == 0) return;
+
+    auto wheelPtr = GetWheelsPtr(handle);
+    auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * index);
+
+    *reinterpret_cast<uint64_t*>(wheelAddr + 0x120) = value;
 }
 
 std::vector<uint32_t> VehicleExtensions::GetVehicleFlags(Vehicle handle) {

@@ -5,5 +5,5 @@ namespace TurboFix {
     void ScriptMain();
     std::vector<CScriptMenu<CTurboScript>::CSubmenu> BuildMenu();
 
-    CTurboScript& GetScript();
+    CTurboScript* GetScript();
 }

@@ -61,6 +61,6 @@ void TurboFix::ScriptMain() {
     }
 }
 
-CTurboScript& TurboFix::GetScript() {
-    return *scriptInst;
+CTurboScript* TurboFix::GetScript() {
+    return scriptInst.get();
 }

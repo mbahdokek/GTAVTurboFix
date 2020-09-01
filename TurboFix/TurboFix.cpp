@@ -4,14 +4,18 @@
 #include "Util/Math.hpp"
 
 bool TF_Active() {
-    auto* activeConfig = TurboFix::GetScript().ActiveConfig();
-    return activeConfig && TurboFix::GetScript().Settings().Main.Enable;
+    if (!TurboFix::GetScript())
+        return false;
+    auto* activeConfig = TurboFix::GetScript()->ActiveConfig();
+    return activeConfig && TurboFix::GetScript()->Settings().Main.Enable;
 }
 
 float TF_GetNormalizedBoost() {
-    auto* activeConfig = TurboFix::GetScript().ActiveConfig();
+    if (!TurboFix::GetScript())
+        return 0.0f;
+    auto* activeConfig = TurboFix::GetScript()->ActiveConfig();
     if (activeConfig) {
-        return map(TurboFix::GetScript().GetCurrentBoost(),
+        return map(TurboFix::GetScript()->GetCurrentBoost(),
             activeConfig->MinBoost, activeConfig->MaxBoost,
             -1.0f, 1.0f);
     }
@@ -19,15 +23,19 @@ float TF_GetNormalizedBoost() {
 }
 
 float TF_GetAbsoluteBoost() {
-    auto* activeConfig = TurboFix::GetScript().ActiveConfig();
+    if (!TurboFix::GetScript())
+        return 0.0f;
+    auto* activeConfig = TurboFix::GetScript()->ActiveConfig();
     if (activeConfig) {
-        return TurboFix::GetScript().GetCurrentBoost();
+        return TurboFix::GetScript()->GetCurrentBoost();
     }
     return 0.0f;
 }
 
 float TF_GetAbsoluteBoostMin() {
-    auto* activeConfig = TurboFix::GetScript().ActiveConfig();
+    if (!TurboFix::GetScript())
+        return 0.0f;
+    auto* activeConfig = TurboFix::GetScript()->ActiveConfig();
     if (activeConfig) {
         return activeConfig->MinBoost;
     }
@@ -35,7 +43,9 @@ float TF_GetAbsoluteBoostMin() {
 }
 
 float TF_GetAbsoluteBoostMax() {
-    auto* activeConfig = TurboFix::GetScript().ActiveConfig();
+    if (!TurboFix::GetScript())
+        return 0.0f;
+    auto* activeConfig = TurboFix::GetScript()->ActiveConfig();
     if (activeConfig) {
         return activeConfig->MaxBoost;
     }

@@ -4,14 +4,14 @@
 
 #include "Memory/VehicleExtensions.hpp"
 
+#include <irrKlang.h>
 #include <vector>
 #include <string>
-#include "ScriptMenu.hpp"
 
 class CTurboScript {
 public:
     CTurboScript(const std::string& settingsFile);
-
+    ~CTurboScript();
     void Tick();
 
     CScriptSettings& Settings() {
@@ -32,6 +32,7 @@ public:
     void UpdateActiveConfig();
 
 protected:
+    void DoExplodyThing(Vehicle c_veh, float explSz, bool loud);
     void updateTurbo();
 
     CScriptSettings mSettings;
@@ -40,4 +41,8 @@ protected:
 
     Vehicle mVehicle;
     CConfig* mActiveConfig;
+
+    irrklang::ISoundEngine* mSoundEngine;
+    std::vector<std::string> mSoundNames;
+    std::vector<irrklang::ISound*> mSounds;
 };

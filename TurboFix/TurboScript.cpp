@@ -14,6 +14,8 @@
 #include <filesystem>
 #include <algorithm>
 
+#include "Util/UI.hpp"
+
 using VExt = VehicleExtensions;
 
 CTurboScript::CTurboScript(const std::string& settingsFile)
@@ -22,6 +24,48 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     , mVehicle(0)
     , mActiveConfig(nullptr) {
     mDefaultConfig.Name = "Default";
+    mSoundEngine = irrklang::createIrrKlangDevice();
+    mSoundEngine->setDefault3DSoundMinDistance(7.0f);
+    mSoundEngine->setSoundVolume(0.5f);
+
+    mSoundNames = {
+        // "TurboFix\\Sounds\\BACK_FIRE_POP_1.wav",
+        // "TurboFix\\Sounds\\BACK_FIRE_POP_2.wav",
+        // "TurboFix\\Sounds\\BACK_FIRE_POP_3.wav",
+        // "TurboFix\\Sounds\\EX_POP_5.wav",
+        // "TurboFix\\Sounds\\EX_POP_6.wav",
+        // "TurboFix\\Sounds\\EX_POP_7.wav",
+        // "TurboFix\\Sounds\\EX_POP_8.wav",
+        // "TurboFix\\Sounds\\EX_POP_SUB.wav",
+        // "TurboFix\\Sounds\\POP.wav",
+        // "TurboFix\\Sounds\\POP_00.wav",
+        // "TurboFix\\Sounds\\POP_01.wav",
+        // "TurboFix\\Sounds\\POP_02.wav",
+        // "TurboFix\\Sounds\\POP_03.wav",
+        // "TurboFix\\Sounds\\POP_04.wav",
+        // "TurboFix\\Sounds\\POP_05.wav",
+        // // "TurboFix\\Sounds\\POP_06.wav",
+        // // "TurboFix\\Sounds\\POP_07.wav",
+        // // "TurboFix\\Sounds\\POP_08.wav",
+        // // "TurboFix\\Sounds\\POP_09.wav",
+        // // "TurboFix\\Sounds\\POP_10.wav",
+        // // "TurboFix\\Sounds\\POP_11.wav",
+        // "TurboFix\\Sounds\\POP_12.wav",
+        "TurboFix\\Sounds\\CRACKLE_0.wav",
+        "TurboFix\\Sounds\\GUNSHOT_0.wav",
+        "TurboFix\\Sounds\\GUNSHOT_1.wav",
+        "TurboFix\\Sounds\\GUNSHOT_2.wav",
+        "TurboFix\\Sounds\\GUNSHOT_3.mp3",
+        "TurboFix\\Sounds\\GUNSHOT_4.mp3",
+    };
+
+    for (const auto& soundName : mSoundNames) {
+        mSounds.push_back(mSoundEngine->play3D(soundName.c_str(), { 0,0,0 }, false, true));
+    }
+}
+
+CTurboScript::~CTurboScript() {
+    //mSoundEngine->drop();
 }
 
 void CTurboScript::UpdateActiveConfig() {
@@ -122,6 +166,93 @@ unsigned CTurboScript::LoadConfigs() {
     return static_cast<unsigned>(mConfigs.size());
 }
 
+long long lastAntilagDelay;
+long long lastThrottleLift;
+
+void CTurboScript::DoExplodyThing(Vehicle c_veh, float explSz, bool loud) {
+    std::vector<std::string> p_flame_location {
+        "exhaust",
+        "exhaust_2",
+        "exhaust_3",
+        "exhaust_4"
+    };
+
+    for (const auto& bone : p_flame_location) {
+        int boneIdx = ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(c_veh, bone.c_str());
+        if (boneIdx == -1)
+            continue;
+
+        Vector3 bonePos = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(c_veh, boneIdx);
+        //Vector3 vehiclePos = ENTITY::GET_ENTITY_COORDS(c_veh, true);
+        // 61 sounds best, no echo or boomy, but still too loud
+        //FIRE::ADD_EXPLOSION(bonePos.x, bonePos.y, bonePos.z, 61, 0.0, true, true, 0.0, true);
+
+        //if (loud) {
+        //    // OK! But LOUD. And echo-y. At least peds don't run away.
+        //    AUDIO::PLAY_SOUND_FROM_COORD(0, "Crate_Land", bonePos.x, bonePos.y, bonePos.z, "FBI_05_SOUNDS", false, 0, 0);
+        //}
+        //else {
+        //
+        //    int val = rand() % 3;
+        //
+        //    if (val == 0) {
+        //        // OK as a soft in-between sound. Not when concurrent.
+        //        AUDIO::PLAY_SOUND_FROM_COORD(0, "Drop_Case", bonePos.x, bonePos.y, bonePos.z, "JWL_PREP_2A_SOUNDS", false, 0, 0);
+        //    }
+        //    else if (val == 1) {
+        //        // Maybe OK as in-between sound, but too metal and compressed otherwise.
+        //        //AUDIO::PLAY_SOUND_FROM_COORD(0, "Grate_Release", bonePos.x, bonePos.y, bonePos.z, "FBI_05_SOUNDS", false, 0, 0);
+        //    }
+        //    else if (val == 2) {
+        //        // Eh, needs more bass
+        //        AUDIO::PLAY_SOUND_FROM_COORD(0, "Release_Crate", bonePos.x, bonePos.y, bonePos.z, "FBI_05_SOUNDS", false, 0, 0);
+        //    }
+        //}
+
+        Vector3 camPos = CAM::GET_GAMEPLAY_CAM_COORD();
+        Vector3 camRot = CAM::GET_GAMEPLAY_CAM_ROT(0);
+        camRot.x = deg2rad(camRot.x);
+        camRot.y = deg2rad(camRot.y);
+        camRot.z = deg2rad(camRot.z);
+        //Vector3 camFwd = CAM::GET_GAME
+        //
+        //GetOffsetInWorldCoords(camPos, camRot, )
+
+        //bool randEnable = (rand() % 3) == 0;
+
+        auto randIndex = rand() % mSounds.size();
+
+        UI::ShowText(0.5,0.5,1.0,std::to_string(randIndex));
+        mSoundEngine->setListenerPosition({ camPos.x, camPos.y, camPos.z }, { camRot.x, camRot.y, camRot.z }, { 0,0,0 }, { 0,0,1 });
+        //if (randEnable)
+
+        if (mSounds[randIndex] != nullptr) {
+            if (mSounds[randIndex]->isFinished()) {
+                mSounds[randIndex] = mSoundEngine->play3D(mSoundNames[randIndex].c_str(), { bonePos.x,bonePos.y,bonePos.z });
+            }
+            else if (mSounds[randIndex]->getIsPaused()) {
+                mSounds[randIndex]->setPosition({ bonePos.x,bonePos.y,bonePos.z });
+                mSounds[randIndex]->setIsPaused(false);
+            }
+        }
+        else {
+            mSounds[randIndex] = mSoundEngine->play3D(mSoundNames[randIndex].c_str(), { bonePos.x,bonePos.y,bonePos.z });
+        }
+
+        //mSoundEngine->play3D(sounds[randIndex].c_str(), { bonePos.x,bonePos.y,bonePos.z });
+        //mSoundEngine->play3D("TurboFix\\Sounds\\EX_POP_SUB.wav", { bonePos.x,bonePos.y,bonePos.z });
+        
+        GRAPHICS::USE_PARTICLE_FX_ASSET("core");
+        auto createdPart = GRAPHICS::START_PARTICLE_FX_LOOPED_ON_ENTITY_BONE("veh_backfire", c_veh, 0.0, 0.0, 0.0, 0.0,
+            0.0,
+            0.0, boneIdx, explSz, false, false, false);
+
+        GRAPHICS::STOP_PARTICLE_FX_LOOPED(createdPart, 1);
+    }
+}
+
+int firstBoomCount = 0;
+
 void CTurboScript::updateTurbo() {
     if (!VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo))
         return;
@@ -159,6 +290,42 @@ void CTurboScript::updateTurbo() {
     newBoost = std::clamp(newBoost, 
         mActiveConfig->MinBoost,
         mActiveConfig->MaxBoost);
+
+    // TODO: First loud/big
+    // Following: Less loud/big
+
+    if (VExt::GetThrottleP(mVehicle) < 0.1f && VExt::GetCurrentRPM(mVehicle) > 0.6f)
+    {
+        // 4800 RPM = 80Hz
+        //   -> 20 combustion strokes per cylinder per second
+        //   -> 50ms between combusions per cylinder
+        if (MISC::GET_GAME_TIMER() > lastAntilagDelay + rand() % 50 + 50)
+        {
+            float explSz;
+            if (firstBoomCount < 12) {
+                explSz = 2.4f;
+            }
+            else {
+                explSz = 0.9f;
+            }
+            DoExplodyThing(mVehicle, explSz, firstBoomCount < 12);
+
+            float boostAdd = mActiveConfig->MaxBoost - currentBoost;
+            boostAdd = boostAdd * (static_cast<float>(rand() % 7 + 4)* 0.1f);
+            float alBoost = currentBoost + boostAdd;
+
+            newBoost = alBoost;
+            newBoost = std::clamp(newBoost,
+                mActiveConfig->MinBoost,
+                mActiveConfig->MaxBoost);
+
+            lastAntilagDelay = MISC::GET_GAME_TIMER();
+            firstBoomCount++;
+        }
+    }
+    else {
+        firstBoomCount = 0;
+    }
 
     if (DashHook::Available()) {
         VehicleDashboardData dashData{};

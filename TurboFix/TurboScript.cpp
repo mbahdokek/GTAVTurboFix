@@ -8,6 +8,7 @@
 #include "Util/Logger.hpp"
 #include "Util/Game.hpp"
 #include "Util/String.hpp"
+#include "Memory/Patches.h"
 
 #include <inc/enums.h>
 #include <inc/natives.h>
@@ -110,6 +111,7 @@ void CTurboScript::Tick() {
         mVehicle = playerVehicle;
 
         UpdateActiveConfig();
+        Patches::BoostLimiter(mActiveConfig && Settings().Main.Enable);
     }
 
     if (mActiveConfig && mSettings.Main.Enable) {

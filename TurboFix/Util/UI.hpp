@@ -1,4 +1,5 @@
 #pragma once
+#include <inc/natives.h>
 #include <string>
 
 namespace UI {
@@ -8,4 +9,6 @@ namespace UI {
     void ShowText(float x, float y, float scale, const std::string& text);
 
     std::string GetKeyboardResult();
+
+    void DrawSphere(Vector3 p, float scale, int r, int g, int b, int a);
 }

@@ -1,4 +1,6 @@
 #include "UI.hpp"
+
+#include <inc/enums.h>
 #include <inc/natives.h>
 
 namespace {
@@ -52,4 +54,14 @@ std::string UI::GetKeyboardResult() {
     if (result == nullptr)
         return std::string();
     return result;
+}
+
+void UI::DrawSphere(Vector3 p, float scale, int r, int g, int b, int a) {
+    GRAPHICS::DRAW_MARKER(eMarkerType::MarkerTypeDebugSphere,
+                          p.x, p.y, p.z,
+                          0.0f, 0.0f, 0.0f,
+                          0.0f, 0.0f, 0.0f,
+                          scale, scale, scale,
+                          r, g, b, a,
+                          false, false, 2, false, nullptr, nullptr, false);
 }

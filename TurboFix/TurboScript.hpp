@@ -32,7 +32,7 @@ public:
     void UpdateActiveConfig();
 
 protected:
-    void DoExplodyThing(Vehicle c_veh, float explSz, bool loud);
+    void runPtfxAudio(Vehicle vehicle, uint32_t popCount, uint32_t maxPopCount);
     void updateTurbo();
 
     CScriptSettings mSettings;
@@ -44,5 +44,5 @@ protected:
 
     irrklang::ISoundEngine* mSoundEngine;
     std::vector<std::string> mSoundNames;
-    std::vector<irrklang::ISound*> mSounds;
+    std::vector<std::string> mExhaustBones;
 };

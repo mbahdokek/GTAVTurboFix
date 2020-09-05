@@ -42,7 +42,8 @@ protected:
     Vehicle mVehicle;
     CConfig* mActiveConfig;
 
-    long long mLastAntilagDelay;
+    uint32_t mLastAntilagDelay;
+    uint32_t mPopCount;
 
     irrklang::ISoundEngine* mSoundEngine;
     std::vector<std::string> mSoundNames;

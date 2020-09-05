@@ -209,8 +209,6 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, uint32_t max
     }
 }
 
-int firstBoomCount = 0;
-
 void CTurboScript::updateTurbo() {
     if (!VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo))
         return;
@@ -256,7 +254,7 @@ void CTurboScript::updateTurbo() {
         //   -> 50ms between combusions per cylinder
         if (MISC::GET_GAME_TIMER() > mLastAntilagDelay + rand() % 50 + 40)
         {
-            runPtfxAudio(mVehicle, firstBoomCount, 12);
+            runPtfxAudio(mVehicle, mPopCount, 12);
 
             float boostAdd = mActiveConfig->MaxBoost - currentBoost;
             boostAdd = boostAdd * (static_cast<float>(rand() % 7 + 4)* 0.1f);
@@ -268,11 +266,11 @@ void CTurboScript::updateTurbo() {
                 mActiveConfig->MaxBoost);
 
             mLastAntilagDelay = MISC::GET_GAME_TIMER();
-            firstBoomCount++;
+            mPopCount++;
         }
     }
     else {
-        firstBoomCount = 0;
+        mPopCount = 0;
     }
 
     if (DashHook::Available()) {

@@ -70,7 +70,7 @@ CTurboScript::~CTurboScript() {
 }
 
 void CTurboScript::UpdateActiveConfig() {
-    if (!Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID())) {
+    if (!Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false)) {
         mActiveConfig = nullptr;
         return;
     }
@@ -114,7 +114,7 @@ void CTurboScript::Tick() {
         Patches::BoostLimiter(mActiveConfig && Settings().Main.Enable);
     }
 
-    if (mActiveConfig && mSettings.Main.Enable) {
+    if (mActiveConfig && Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false) && mSettings.Main.Enable) {
         updateTurbo();
     }
 }

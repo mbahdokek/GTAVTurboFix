@@ -42,6 +42,8 @@ protected:
     Vehicle mVehicle;
     CConfig* mActiveConfig;
 
+    long long mLastAntilagDelay;
+
     irrklang::ISoundEngine* mSoundEngine;
     std::vector<std::string> mSoundNames;
     std::vector<std::string> mExhaustBones;

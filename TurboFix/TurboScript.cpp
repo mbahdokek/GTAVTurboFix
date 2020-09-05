@@ -22,7 +22,8 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     : mSettings(settingsFile)
     , mDefaultConfig{}
     , mVehicle(0)
-    , mActiveConfig(nullptr) {
+    , mActiveConfig(nullptr)
+    , mLastAntilagDelay(0) {
     mDefaultConfig.Name = "Default";
     mSoundEngine = irrklang::createIrrKlangDevice();
     mSoundEngine->setDefault3DSoundMinDistance(7.0f);
@@ -54,9 +55,7 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     };
 }
 
-CTurboScript::~CTurboScript() {
-    //mSoundEngine->drop();
-}
+CTurboScript::~CTurboScript() = default;
 
 void CTurboScript::UpdateActiveConfig() {
     if (!Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false)) {
@@ -157,9 +156,6 @@ unsigned CTurboScript::LoadConfigs() {
     return static_cast<unsigned>(mConfigs.size());
 }
 
-long long lastAntilagDelay;
-long long lastThrottleLift;
-
 void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, uint32_t maxPopCount) {
     for (const auto& bone : mExhaustBones) {
         int boneIdx = ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(vehicle, bone.c_str());
@@ -258,7 +254,7 @@ void CTurboScript::updateTurbo() {
         // 4800 RPM = 80Hz
         //   -> 20 combustion strokes per cylinder per second
         //   -> 50ms between combusions per cylinder
-        if (MISC::GET_GAME_TIMER() > lastAntilagDelay + rand() % 50 + 40)
+        if (MISC::GET_GAME_TIMER() > mLastAntilagDelay + rand() % 50 + 40)
         {
             runPtfxAudio(mVehicle, firstBoomCount, 12);
 
@@ -271,7 +267,7 @@ void CTurboScript::updateTurbo() {
                 mActiveConfig->MinBoost,
                 mActiveConfig->MaxBoost);
 
-            lastAntilagDelay = MISC::GET_GAME_TIMER();
+            mLastAntilagDelay = MISC::GET_GAME_TIMER();
             firstBoomCount++;
         }
     }

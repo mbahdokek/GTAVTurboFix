@@ -26,8 +26,8 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     , mLastAntilagDelay(0) {
     mDefaultConfig.Name = "Default";
     mSoundEngine = irrklang::createIrrKlangDevice();
-    mSoundEngine->setDefault3DSoundMinDistance(7.0f);
-    mSoundEngine->setSoundVolume(0.35f);
+    mSoundEngine->setDefault3DSoundMinDistance(4.0f);
+    mSoundEngine->setSoundVolume(0.25f);
 
     mSoundNames = {
         "TurboFix\\Sounds\\GUNSHOT_1.wav",
@@ -157,49 +157,58 @@ unsigned CTurboScript::LoadConfigs() {
 }
 
 void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, uint32_t maxPopCount) {
+    Vector3 camPos = CAM::GET_GAMEPLAY_CAM_COORD();
+    Vector3 camRot = CAM::GET_GAMEPLAY_CAM_ROT(0);
+    Vector3 camDir = RotationToDirection(camRot);
+
+    UI::DrawSphere(camPos + camDir, 0.125f, 255, 0, 0, 255);
+    UI::ShowText(0.5f, 0.5f, 0.5f, std::to_string(Length(camDir)));
+
+    mSoundEngine->setListenerPosition(
+        { camPos.x, camPos.y, camPos.z },
+        { camDir.x, camDir.y, camDir.z },
+        { 0, 0, 0 },
+        { 0, 0, 1 }
+    );
+
     for (const auto& bone : mExhaustBones) {
         int boneIdx = ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(vehicle, bone.c_str());
         if (boneIdx == -1)
             continue;
 
         Vector3 bonePos = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(vehicle, boneIdx);
-        //Vector3 vehiclePos = ENTITY::GET_ENTITY_COORDS(c_veh, true);
-        // 61 sounds best, no echo or boomy, but still too loud
-        //FIRE::ADD_EXPLOSION(bonePos.x, bonePos.y, bonePos.z, 61, 0.0, true, true, 0.0, true);
-
-        Vector3 camPos = CAM::GET_GAMEPLAY_CAM_COORD();
-        Vector3 camRot = CAM::GET_GAMEPLAY_CAM_ROT(0);
-        camRot.x = deg2rad(camRot.x);
-        camRot.y = deg2rad(camRot.y);
-        camRot.z = deg2rad(camRot.z);
-        mSoundEngine->setListenerPosition({ camPos.x, camPos.y, camPos.z }, { camRot.x, camRot.y, camRot.z }, { 0,0,0 }, { 0,0,1 });
-
         float explSz;
+        std::string soundName;
+
+        UI::DrawSphere(bonePos, 0.125f, 0, 255, 0, 255);
+
         if (popCount < maxPopCount) {
             explSz = 2.4f;
-
-            auto randIndex = rand() % mSoundNames.size();
-            mSoundEngine->play3D(mSoundNames[randIndex].c_str(), { bonePos.x,bonePos.y,bonePos.z });
-            //FIRE::ADD_EXPLOSION(bonePos.x, bonePos.y, bonePos.z, 61, 0.0, true, true, 0.0, true);
+            if (rand() % 4 != 0) {
+                auto randIndex = rand() % mSoundNames.size();
+                soundName = mSoundNames[randIndex];
+            }
+            else {
+                soundName = "TurboFix\\Sounds\\EX_POP_SUB.wav";
+            }
         }
         else if (popCount < maxPopCount + rand() % maxPopCount) {
             if (rand() % 2) {
                 explSz = 1.4f;
                 auto randIndex = rand() % mSoundNames.size();
-                mSoundEngine->play3D(mSoundNames[randIndex].c_str(), { bonePos.x,bonePos.y,bonePos.z });
+                soundName = mSoundNames[randIndex];
             }
             else {
                 explSz = 0.9f;
-                mSoundEngine->play3D("TurboFix\\Sounds\\EX_POP_SUB.wav", { bonePos.x,bonePos.y,bonePos.z });
+                soundName = "TurboFix\\Sounds\\EX_POP_SUB.wav";
             }
         }
         else {
             explSz = 0.9f;
-            mSoundEngine->play3D("TurboFix\\Sounds\\EX_POP_SUB.wav", { bonePos.x,bonePos.y,bonePos.z });
+            soundName = "TurboFix\\Sounds\\EX_POP_SUB.wav";
         }
+        mSoundEngine->play3D(soundName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
 
-        // UI::DrawSphere(bonePos, 0.25f, 0, 255, 0, 255);
-        
         GRAPHICS::USE_PARTICLE_FX_ASSET("core");
         auto createdPart = GRAPHICS::START_PARTICLE_FX_LOOPED_ON_ENTITY_BONE("veh_backfire", vehicle, 0.0, 0.0, 0.0, 0.0,
             0.0,

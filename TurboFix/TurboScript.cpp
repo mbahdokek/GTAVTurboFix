@@ -25,8 +25,8 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     , mActiveConfig(nullptr)
     , mLastAntilagDelay(0) {
     mDefaultConfig.Name = "Default";
-    mSoundEngine = irrklang::createIrrKlangDevice();
-    mSoundEngine->setDefault3DSoundMinDistance(4.0f);
+    mSoundEngine = irrklang::createIrrKlangDevice(irrklang::ESOD_DIRECT_SOUND_8);
+    mSoundEngine->setDefault3DSoundMinDistance(5.0f);
     mSoundEngine->setSoundVolume(0.25f);
 
     mSoundNames = {
@@ -161,14 +161,13 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, uint32_t max
     Vector3 camRot = CAM::GET_GAMEPLAY_CAM_ROT(0);
     Vector3 camDir = RotationToDirection(camRot);
 
-    UI::DrawSphere(camPos + camDir, 0.125f, 255, 0, 0, 255);
-    UI::ShowText(0.5f, 0.5f, 0.5f, std::to_string(Length(camDir)));
+    // UI::DrawSphere(camPos + camDir, 0.125f, 255, 0, 0, 255);
 
     mSoundEngine->setListenerPosition(
-        { camPos.x, camPos.y, camPos.z },
-        { camDir.x, camDir.y, camDir.z },
-        { 0, 0, 0 },
-        { 0, 0, 1 }
+        irrklang::vec3df( camPos.x, camPos.y, camPos.z ),
+        irrklang::vec3df( camDir.x, camDir.y, camDir.z ),
+        irrklang::vec3df( 0, 0, 0 ),
+        irrklang::vec3df( 0, 0, -1 )
     );
 
     for (const auto& bone : mExhaustBones) {
@@ -180,7 +179,7 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, uint32_t max
         float explSz;
         std::string soundName;
 
-        UI::DrawSphere(bonePos, 0.125f, 0, 255, 0, 255);
+        // UI::DrawSphere(bonePos, 0.125f, 0, 255, 0, 255);
 
         if (popCount < maxPopCount) {
             explSz = 2.4f;
@@ -261,7 +260,7 @@ void CTurboScript::updateTurbo() {
         // 4800 RPM = 80Hz
         //   -> 20 combustion strokes per cylinder per second
         //   -> 50ms between combusions per cylinder
-        if (MISC::GET_GAME_TIMER() > mLastAntilagDelay + rand() % 50 + 40)
+        if (MISC::GET_GAME_TIMER() > mLastAntilagDelay + rand() % 50 + 50)
         {
             runPtfxAudio(mVehicle, mPopCount, 12);
 

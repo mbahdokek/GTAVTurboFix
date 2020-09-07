@@ -26,8 +26,8 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     , mLastAntilagDelay(0) {
     mDefaultConfig.Name = "Default";
     mSoundEngine = irrklang::createIrrKlangDevice(irrklang::ESOD_DIRECT_SOUND_8);
-    mSoundEngine->setDefault3DSoundMinDistance(5.0f);
-    mSoundEngine->setSoundVolume(0.25f);
+    mSoundEngine->setDefault3DSoundMinDistance(7.5f);
+    mSoundEngine->setSoundVolume(0.20f);
 
     mSoundNames = {
         "TurboFix\\Sounds\\GUNSHOT_1.wav",
@@ -156,7 +156,35 @@ unsigned CTurboScript::LoadConfigs() {
     return static_cast<unsigned>(mConfigs.size());
 }
 
-void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, uint32_t maxPopCount) {
+float CTurboScript::updateAntiLag(float currentBoost, float newBoost) {
+    if (VExt::GetThrottleP(mVehicle) < 0.1f && VExt::GetCurrentRPM(mVehicle) > 0.6f) {
+        // 4800 RPM = 80Hz
+        //   -> 20 combustion strokes per cylinder per second
+        //   -> 50ms between combusions per cylinder -> 10ms average?
+        if (MISC::GET_GAME_TIMER() > static_cast<int>(mLastAntilagDelay) + rand() % 50 + 50) {
+            runPtfxAudio(mVehicle, mPopCount);
+
+            float boostAdd = mActiveConfig->MaxBoost - currentBoost;
+            boostAdd = boostAdd * (static_cast<float>(rand() % 7 + 4) * 0.1f);
+            float alBoost = currentBoost + boostAdd;
+
+            newBoost = alBoost;
+            newBoost = std::clamp(newBoost,
+                mActiveConfig->MinBoost,
+                mActiveConfig->MaxBoost);
+
+            mLastAntilagDelay = MISC::GET_GAME_TIMER();
+            mPopCount++;
+        }
+    }
+    else {
+        mPopCount = 0;
+    }
+    return newBoost;
+}
+
+void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount) {
+    uint32_t maxPopCount = mActiveConfig->BaseLoudCount;
     Vector3 camPos = CAM::GET_GAMEPLAY_CAM_COORD();
     Vector3 camRot = CAM::GET_GAMEPLAY_CAM_ROT(0);
     Vector3 camDir = RotationToDirection(camRot);
@@ -191,7 +219,7 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, uint32_t max
                 soundName = "TurboFix\\Sounds\\EX_POP_SUB.wav";
             }
         }
-        else if (popCount < maxPopCount + rand() % maxPopCount) {
+        else if (popCount < maxPopCount + rand() % maxPopCount && maxPopCount > 0) {
             if (rand() % 2) {
                 explSz = 1.4f;
                 auto randIndex = rand() % mSoundNames.size();
@@ -207,6 +235,7 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, uint32_t max
             soundName = "TurboFix\\Sounds\\EX_POP_SUB.wav";
         }
         mSoundEngine->play3D(soundName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
+        mSoundEngine->play3D("TurboFix\\Sounds\\EX_POP_SUB.wav", { bonePos.x, bonePos.y, bonePos.z });
 
         GRAPHICS::USE_PARTICLE_FX_ASSET("core");
         auto createdPart = GRAPHICS::START_PARTICLE_FX_LOOPED_ON_ENTITY_BONE("veh_backfire", vehicle, 0.0, 0.0, 0.0, 0.0,
@@ -255,30 +284,8 @@ void CTurboScript::updateTurbo() {
         mActiveConfig->MinBoost,
         mActiveConfig->MaxBoost);
 
-    if (VExt::GetThrottleP(mVehicle) < 0.1f && VExt::GetCurrentRPM(mVehicle) > 0.6f)
-    {
-        // 4800 RPM = 80Hz
-        //   -> 20 combustion strokes per cylinder per second
-        //   -> 50ms between combusions per cylinder
-        if (MISC::GET_GAME_TIMER() > mLastAntilagDelay + rand() % 50 + 50)
-        {
-            runPtfxAudio(mVehicle, mPopCount, 12);
-
-            float boostAdd = mActiveConfig->MaxBoost - currentBoost;
-            boostAdd = boostAdd * (static_cast<float>(rand() % 7 + 4)* 0.1f);
-            float alBoost = currentBoost + boostAdd;
-
-            newBoost = alBoost;
-            newBoost = std::clamp(newBoost,
-                mActiveConfig->MinBoost,
-                mActiveConfig->MaxBoost);
-
-            mLastAntilagDelay = MISC::GET_GAME_TIMER();
-            mPopCount++;
-        }
-    }
-    else {
-        mPopCount = 0;
+    if (mActiveConfig->AntiLag) {
+        newBoost = updateAntiLag(currentBoost, newBoost);
     }
 
     if (DashHook::Available()) {

@@ -32,7 +32,8 @@ public:
     void UpdateActiveConfig();
 
 protected:
-    void runPtfxAudio(Vehicle vehicle, uint32_t popCount, uint32_t maxPopCount);
+    void runPtfxAudio(Vehicle vehicle, uint32_t popCount);
+    float updateAntiLag(float currentBoost, float newBoost);
     void updateTurbo();
 
     CScriptSettings mSettings;

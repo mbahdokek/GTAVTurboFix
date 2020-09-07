@@ -56,6 +56,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
                     fmt::format("Max boost: {:.2f}", config.MaxBoost),
                     fmt::format("Spool rate: {:.5f}", config.SpoolRate),
                     fmt::format("Unspool rate: {:.5f}", config.UnspoolRate),
+                    fmt::format("Anti-lag: {}", config.AntiLag),
                 };
 
                 mbCtx.OptionPlusPlus(extras);
@@ -95,6 +96,9 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
 
         mbCtx.FloatOptionCb("Unspool rate", config->UnspoolRate, 0.01f, 0.99999f, 0.00005f, MenuUtils::GetKbFloat,
             { "How fast the turbo slows down. Calculation is same as above." });
+
+        mbCtx.BoolOption("Anti-lag", config->AntiLag,
+            { "Anti-lag keeps the turbo spinning when off-throttle at higher RPMs." });
 
         if (mbCtx.Option("Save changes")) {
             config->Write();

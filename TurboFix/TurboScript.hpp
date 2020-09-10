@@ -32,7 +32,7 @@ public:
     void UpdateActiveConfig();
 
 protected:
-    void runPtfxAudio(Vehicle vehicle, uint32_t popCount);
+    void runPtfxAudio(Vehicle vehicle, uint32_t popCount, float currentThrottle);
     float updateAntiLag(float currentBoost, float newBoost);
     void updateTurbo();
 
@@ -45,6 +45,8 @@ protected:
 
     uint32_t mLastAntilagDelay;
     uint32_t mPopCount;
+
+    float mLastThrottle;
 
     irrklang::ISoundEngine* mSoundEngine;
     std::vector<std::string> mSoundNames;

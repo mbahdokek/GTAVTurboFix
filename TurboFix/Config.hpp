@@ -36,6 +36,6 @@ public:
     float UnspoolRate = 0.97f;
 
     bool AntiLag = false;
-    uint32_t BaseLoudCount = 4;
+    uint32_t BaseLoudCount = 12;
 
 };

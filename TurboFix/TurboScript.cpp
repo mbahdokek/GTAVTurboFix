@@ -29,10 +29,14 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     mSoundEngine->setDefault3DSoundMinDistance(7.5f);
     mSoundEngine->setSoundVolume(0.20f);
 
+    for (uint32_t i = 0; i < 10; ++i) {
+        
+    }
+
     mSoundNames = {
+        "TurboFix\\Sounds\\GUNSHOT_0.wav",
         "TurboFix\\Sounds\\GUNSHOT_1.wav",
         "TurboFix\\Sounds\\GUNSHOT_2.wav",
-        "TurboFix\\Sounds\\GUNSHOT_3.wav",
     };
 
     mExhaustBones = {
@@ -157,12 +161,13 @@ unsigned CTurboScript::LoadConfigs() {
 }
 
 float CTurboScript::updateAntiLag(float currentBoost, float newBoost) {
+    float currentThrottle = VExt::GetThrottleP(mVehicle);
     if (VExt::GetThrottleP(mVehicle) < 0.1f && VExt::GetCurrentRPM(mVehicle) > 0.6f) {
         // 4800 RPM = 80Hz
         //   -> 20 combustion strokes per cylinder per second
         //   -> 50ms between combusions per cylinder -> 10ms average?
         if (MISC::GET_GAME_TIMER() > static_cast<int>(mLastAntilagDelay) + rand() % 50 + 50) {
-            runPtfxAudio(mVehicle, mPopCount);
+            runPtfxAudio(mVehicle, mPopCount, currentThrottle);
 
             float boostAdd = mActiveConfig->MaxBoost - currentBoost;
             boostAdd = boostAdd * (static_cast<float>(rand() % 7 + 4) * 0.1f);
@@ -180,10 +185,12 @@ float CTurboScript::updateAntiLag(float currentBoost, float newBoost) {
     else {
         mPopCount = 0;
     }
+
+    mLastThrottle = currentThrottle;
     return newBoost;
 }
 
-void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount) {
+void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, float currentThrottle) {
     uint32_t maxPopCount = mActiveConfig->BaseLoudCount;
     Vector3 camPos = CAM::GET_GAMEPLAY_CAM_COORD();
     Vector3 camRot = CAM::GET_GAMEPLAY_CAM_ROT(0);
@@ -198,6 +205,12 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount) {
         irrklang::vec3df( 0, 0, -1 )
     );
 
+    bool loud = false;
+    // if lifted entirely within 200ms
+    if ((mLastThrottle - currentThrottle) / MISC::GET_FRAME_TIME() > 1000.0f / 200.0f) {
+        loud = true;
+    }
+
     for (const auto& bone : mExhaustBones) {
         int boneIdx = ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(vehicle, bone.c_str());
         if (boneIdx == -1)
@@ -209,33 +222,22 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount) {
 
         // UI::DrawSphere(bonePos, 0.125f, 0, 255, 0, 255);
 
-        if (popCount < maxPopCount) {
-            explSz = 2.4f;
-            if (rand() % 4 != 0) {
-                auto randIndex = rand() % mSoundNames.size();
-                soundName = mSoundNames[randIndex];
-            }
-            else {
-                soundName = "TurboFix\\Sounds\\EX_POP_SUB.wav";
-            }
+        if (loud) {
+            explSz = 2.9f;
+            auto randIndex = rand() % mSoundNames.size();
+            soundName = mSoundNames[randIndex];
         }
         else if (popCount < maxPopCount + rand() % maxPopCount && maxPopCount > 0) {
-            if (rand() % 2) {
-                explSz = 1.4f;
-                auto randIndex = rand() % mSoundNames.size();
-                soundName = mSoundNames[randIndex];
-            }
-            else {
-                explSz = 0.9f;
-                soundName = "TurboFix\\Sounds\\EX_POP_SUB.wav";
-            }
+            explSz = 1.4f;
+            soundName = "TurboFix\\Sounds\\EX_POP_SUB.wav";
         }
         else {
             explSz = 0.9f;
-            soundName = "TurboFix\\Sounds\\EX_POP_SUB.wav";
+            soundName = std::string();
         }
-        mSoundEngine->play3D(soundName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
-        mSoundEngine->play3D("TurboFix\\Sounds\\EX_POP_SUB.wav", { bonePos.x, bonePos.y, bonePos.z });
+        if (!soundName.empty())
+            auto* soundBackfire = mSoundEngine->play3D(soundName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
+        auto* soundBass = mSoundEngine->play3D("TurboFix\\Sounds\\EX_POP_SUB.wav", { bonePos.x, bonePos.y, bonePos.z });
 
         GRAPHICS::USE_PARTICLE_FX_ASSET("core");
         auto createdPart = GRAPHICS::START_PARTICLE_FX_LOOPED_ON_ENTITY_BONE("veh_backfire", vehicle, 0.0, 0.0, 0.0, 0.0,

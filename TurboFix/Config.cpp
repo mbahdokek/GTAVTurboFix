@@ -52,6 +52,8 @@ CConfig CConfig::Read(const std::string& configFile) {
     config.UnspoolRate = ini.GetDoubleValue("Turbo", "UnspoolRate", config.UnspoolRate);
 #pragma warning(pop)
 
+    config.AntiLag = ini.GetBoolValue("Turbo", "AntiLag", config.AntiLag);
+
     return config;
 }
 
@@ -77,6 +79,8 @@ void CConfig::Write() {
     ini.SetDoubleValue("Turbo", "SpoolRate", SpoolRate);
     ini.SetDoubleValue("Turbo", "UnspoolRate", UnspoolRate);
 #pragma warning(pop)
+
+    ini.SetBoolValue("Turbo", "AntiLag", AntiLag);
 
     result = ini.SaveFile(configFile.c_str());
     CHECK_LOG_SI_ERROR(result, "save");
@@ -107,6 +111,8 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
     ini.SetDoubleValue("Turbo", "SpoolRate", SpoolRate);
     ini.SetDoubleValue("Turbo", "UnspoolRate", UnspoolRate);
 #pragma warning(pop)
+
+    ini.SetBoolValue("Turbo", "AntiLag", AntiLag);
 
     result = ini.SaveFile(configFile.c_str());
     CHECK_LOG_SI_ERROR(result, "save");

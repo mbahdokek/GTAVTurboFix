@@ -8,6 +8,8 @@
 #include "Util/Logger.hpp"
 #include "Util/Game.hpp"
 #include "Util/String.hpp"
+#include "Util/UI.hpp"
+#include "Memory/Patches.h"
 
 #include <inc/enums.h>
 #include <inc/natives.h>
@@ -20,12 +22,47 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     : mSettings(settingsFile)
     , mDefaultConfig{}
     , mVehicle(0)
-    , mActiveConfig(nullptr) {
+    , mActiveConfig(nullptr)
+    , mLastAntilagDelay(0) {
     mDefaultConfig.Name = "Default";
+    mSoundEngine = irrklang::createIrrKlangDevice(irrklang::ESOD_DIRECT_SOUND_8);
+    mSoundEngine->setDefault3DSoundMinDistance(7.5f);
+    mSoundEngine->setSoundVolume(0.20f);
+
+    for (uint32_t i = 0; i < 10; ++i) {
+        
+    }
+
+    mSoundNames = {
+        "TurboFix\\Sounds\\GUNSHOT_0.wav",
+        "TurboFix\\Sounds\\GUNSHOT_1.wav",
+        "TurboFix\\Sounds\\GUNSHOT_2.wav",
+    };
+
+    mExhaustBones = {
+        "exhaust",
+        "exhaust_2",
+        "exhaust_3",
+        "exhaust_4",
+        "exhaust_5",
+        "exhaust_6",
+        "exhaust_7",
+        "exhaust_8",
+        "exhaust_9",
+        "exhaust_10",
+        "exhaust_11",
+        "exhaust_12",
+        "exhaust_13",
+        "exhaust_14",
+        "exhaust_15",
+        "exhaust_16",
+    };
 }
 
+CTurboScript::~CTurboScript() = default;
+
 void CTurboScript::UpdateActiveConfig() {
-    if (!Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID())) {
+    if (!Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false)) {
         mActiveConfig = nullptr;
         return;
     }
@@ -66,9 +103,10 @@ void CTurboScript::Tick() {
         mVehicle = playerVehicle;
 
         UpdateActiveConfig();
+        Patches::BoostLimiter(mActiveConfig && Settings().Main.Enable);
     }
 
-    if (mActiveConfig && mSettings.Main.Enable) {
+    if (mActiveConfig && Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false) && mSettings.Main.Enable) {
         updateTurbo();
     }
 }
@@ -122,6 +160,94 @@ unsigned CTurboScript::LoadConfigs() {
     return static_cast<unsigned>(mConfigs.size());
 }
 
+float CTurboScript::updateAntiLag(float currentBoost, float newBoost) {
+    float currentThrottle = VExt::GetThrottleP(mVehicle);
+    if (VExt::GetThrottleP(mVehicle) < 0.1f && VExt::GetCurrentRPM(mVehicle) > 0.6f) {
+        // 4800 RPM = 80Hz
+        //   -> 20 combustion strokes per cylinder per second
+        //   -> 50ms between combusions per cylinder -> 10ms average?
+        if (MISC::GET_GAME_TIMER() > static_cast<int>(mLastAntilagDelay) + rand() % 50 + 50) {
+            runPtfxAudio(mVehicle, mPopCount, currentThrottle);
+
+            float boostAdd = mActiveConfig->MaxBoost - currentBoost;
+            boostAdd = boostAdd * (static_cast<float>(rand() % 7 + 4) * 0.1f);
+            float alBoost = currentBoost + boostAdd;
+
+            newBoost = alBoost;
+            newBoost = std::clamp(newBoost,
+                mActiveConfig->MinBoost,
+                mActiveConfig->MaxBoost);
+
+            mLastAntilagDelay = MISC::GET_GAME_TIMER();
+            mPopCount++;
+        }
+    }
+    else {
+        mPopCount = 0;
+    }
+
+    mLastThrottle = currentThrottle;
+    return newBoost;
+}
+
+void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, float currentThrottle) {
+    uint32_t maxPopCount = mActiveConfig->BaseLoudCount;
+    Vector3 camPos = CAM::GET_GAMEPLAY_CAM_COORD();
+    Vector3 camRot = CAM::GET_GAMEPLAY_CAM_ROT(0);
+    Vector3 camDir = RotationToDirection(camRot);
+
+    // UI::DrawSphere(camPos + camDir, 0.125f, 255, 0, 0, 255);
+
+    mSoundEngine->setListenerPosition(
+        irrklang::vec3df( camPos.x, camPos.y, camPos.z ),
+        irrklang::vec3df( camDir.x, camDir.y, camDir.z ),
+        irrklang::vec3df( 0, 0, 0 ),
+        irrklang::vec3df( 0, 0, -1 )
+    );
+
+    bool loud = false;
+    // if lifted entirely within 200ms
+    if ((mLastThrottle - currentThrottle) / MISC::GET_FRAME_TIME() > 1000.0f / 200.0f) {
+        loud = true;
+    }
+
+    for (const auto& bone : mExhaustBones) {
+        int boneIdx = ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(vehicle, bone.c_str());
+        if (boneIdx == -1)
+            continue;
+
+        Vector3 bonePos = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(vehicle, boneIdx);
+        float explSz;
+        std::string soundName;
+
+        // UI::DrawSphere(bonePos, 0.125f, 0, 255, 0, 255);
+
+        if (loud) {
+            explSz = 2.9f;
+            auto randIndex = rand() % mSoundNames.size();
+            soundName = mSoundNames[randIndex];
+        }
+        else if (popCount < maxPopCount + rand() % maxPopCount && maxPopCount > 0) {
+            explSz = 1.4f;
+            soundName = "TurboFix\\Sounds\\EX_POP_SUB.wav";
+        }
+        else {
+            explSz = 0.9f;
+            soundName = std::string();
+        }
+        if (!soundName.empty())
+            auto* soundBackfire = mSoundEngine->play3D(soundName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
+        auto* soundBass = mSoundEngine->play3D("TurboFix\\Sounds\\EX_POP_SUB.wav", { bonePos.x, bonePos.y, bonePos.z });
+
+        GRAPHICS::USE_PARTICLE_FX_ASSET("core");
+        auto createdPart = GRAPHICS::START_PARTICLE_FX_LOOPED_ON_ENTITY_BONE("veh_backfire", vehicle, 0.0, 0.0, 0.0, 0.0,
+            0.0,
+            0.0, boneIdx, explSz, false, false, false);
+
+        GRAPHICS::STOP_PARTICLE_FX_LOOPED(createdPart, 1);
+    }
+}
+
 void CTurboScript::updateTurbo() {
     if (!VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo))
         return;
@@ -159,6 +285,10 @@ void CTurboScript::updateTurbo() {
     newBoost = std::clamp(newBoost, 
         mActiveConfig->MinBoost,
         mActiveConfig->MaxBoost);
+
+    if (mActiveConfig->AntiLag) {
+        newBoost = updateAntiLag(currentBoost, newBoost);
+    }
 
     if (DashHook::Available()) {
         VehicleDashboardData dashData{};

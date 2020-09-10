@@ -35,4 +35,7 @@ public:
     // How many % of no boost after 1 second: 0.97f
     float UnspoolRate = 0.97f;
 
+    bool AntiLag = false;
+    uint32_t BaseLoudCount = 12;
+
 };

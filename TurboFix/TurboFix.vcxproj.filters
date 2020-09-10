@@ -160,5 +160,13 @@
     <ClInclude Include="Compatibility.h">
       <Filter>Compatibility</Filter>
     </ClInclude>
+    <ClInclude Include="..\thirdparty\irrKlang\include\irrKlang.h">
+      <Filter>Compatibility</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\thirdparty\irrKlang\lib\Winx64-visualStudio\irrKlang.lib">
+      <Filter>Compatibility</Filter>
+    </Library>
   </ItemGroup>
 </Project>

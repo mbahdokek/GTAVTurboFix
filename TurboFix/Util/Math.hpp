@@ -168,3 +168,20 @@ auto GetAngleBetween(Vector3T a, Vector3T b) {
         angle = -angle;
     return angle;
 }
+
+template <typename Vector3T>
+Vector3T RotationToDirection(Vector3T rot) {
+    float z = rot.z;
+    float num = z * 0.0174532924f;
+
+    float x = rot.x;
+    float num2 = x * 0.0174532924f;
+
+    float num3 = abs(cos(num2));
+
+    Vector3T dir{};
+    dir.x = -sin(num) * num3;
+    dir.y = cos(num) * num3;
+    dir.z = sin(num2);
+    return dir;
+}

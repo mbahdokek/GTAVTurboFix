@@ -1,4 +1,6 @@
 #include "UI.hpp"
+
+#include <inc/enums.h>
 #include <inc/natives.h>
 
 namespace {
@@ -27,6 +29,18 @@ void UI::Notify(const std::string& message, bool removePrevious) {
     Notify(message, notifHandleAddr);
 }
 
+void UI::ShowText(float x, float y, float scale, const std::string& text) {
+    HUD::SET_TEXT_FONT(0);
+    HUD::SET_TEXT_SCALE(scale, scale);
+    HUD::SET_TEXT_COLOUR(255, 255, 255, 255);
+    HUD::SET_TEXT_WRAP(0.0, 1.0);
+    HUD::SET_TEXT_CENTRE(0);
+    HUD::SET_TEXT_OUTLINE();
+    HUD::BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
+    HUD::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
+    HUD::END_TEXT_COMMAND_DISPLAY_TEXT(x, y, 0);
+}
+
 std::string UI::GetKeyboardResult() {
     WAIT(1);
     MISC::DISPLAY_ONSCREEN_KEYBOARD(true, "FMMC_KEY_TIP8", "", "", "", "", "", 127);
@@ -40,4 +54,14 @@ std::string UI::GetKeyboardResult() {
     if (result == nullptr)
         return std::string();
     return result;
+}
+
+void UI::DrawSphere(Vector3 p, float scale, int r, int g, int b, int a) {
+    GRAPHICS::DRAW_MARKER(eMarkerType::MarkerTypeDebugSphere,
+                          p.x, p.y, p.z,
+                          0.0f, 0.0f, 0.0f,
+                          0.0f, 0.0f, 0.0f,
+                          scale, scale, scale,
+                          r, g, b, a,
+                          false, false, 2, false, nullptr, nullptr, false);
 }

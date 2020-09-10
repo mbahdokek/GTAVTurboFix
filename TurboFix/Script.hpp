@@ -1,5 +1,6 @@
 #pragma once
 #include "TurboScript.hpp"
+#include "ScriptMenu.hpp"
 
 namespace TurboFix {
     void ScriptMain();

@@ -50,9 +50,15 @@ CConfig CConfig::Read(const std::string& configFile) {
     config.MaxBoost = ini.GetDoubleValue("Turbo", "MaxBoost", config.MaxBoost);
     config.SpoolRate = ini.GetDoubleValue("Turbo", "SpoolRate", config.SpoolRate);
     config.UnspoolRate = ini.GetDoubleValue("Turbo", "UnspoolRate", config.UnspoolRate);
-#pragma warning(pop)
-
     config.AntiLag = ini.GetBoolValue("Turbo", "AntiLag", config.AntiLag);
+
+    // [Dial]
+    config.DialBoostOffset = ini.GetDoubleValue("Dial", "BoostOffset", config.DialBoostOffset);
+    config.DialBoostScale = ini.GetDoubleValue("Dial", "BoostScale", config.DialBoostScale);
+    config.DialVacuumOffset = ini.GetDoubleValue("Dial", "VacuumOffset", config.DialVacuumOffset);
+    config.DialVacuumScale = ini.GetDoubleValue("Dial", "VacuumScale", config.DialVacuumScale);
+    config.DialBoostIncludesVacuum = ini.GetBoolValue("Dial", "BoostIncludesVacuum", config.DialBoostIncludesVacuum);
+#pragma warning(pop)
 
     return config;
 }
@@ -78,9 +84,16 @@ void CConfig::Write() {
     ini.SetDoubleValue("Turbo", "MaxBoost", MaxBoost);
     ini.SetDoubleValue("Turbo", "SpoolRate", SpoolRate);
     ini.SetDoubleValue("Turbo", "UnspoolRate", UnspoolRate);
+    ini.SetBoolValue("Turbo", "AntiLag", AntiLag);
+
+    // [Dial]
+    ini.SetDoubleValue("Dial", "BoostOffset", DialBoostOffset);
+    ini.SetDoubleValue("Dial", "BoostScale", DialBoostScale);
+    ini.SetDoubleValue("Dial", "VacuumOffset", DialVacuumOffset);
+    ini.SetDoubleValue("Dial", "VacuumScale", DialVacuumScale);
+    ini.SetBoolValue("Dial", "BoostIncludesVacuum", DialBoostIncludesVacuum);
 #pragma warning(pop)
 
-    ini.SetBoolValue("Turbo", "AntiLag", AntiLag);
 
     result = ini.SaveFile(configFile.c_str());
     CHECK_LOG_SI_ERROR(result, "save");
@@ -110,9 +123,15 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
     ini.SetDoubleValue("Turbo", "MaxBoost", MaxBoost);
     ini.SetDoubleValue("Turbo", "SpoolRate", SpoolRate);
     ini.SetDoubleValue("Turbo", "UnspoolRate", UnspoolRate);
-#pragma warning(pop)
-
     ini.SetBoolValue("Turbo", "AntiLag", AntiLag);
+
+    // [Dial]
+    ini.SetDoubleValue("Dial", "BoostOffset", DialBoostOffset);
+    ini.SetDoubleValue("Dial", "BoostScale", DialBoostScale);
+    ini.SetDoubleValue("Dial", "VacuumOffset", DialVacuumOffset);
+    ini.SetDoubleValue("Dial", "VacuumScale", DialVacuumScale);
+    ini.SetBoolValue("Dial", "BoostIncludesVacuum", DialBoostIncludesVacuum);
+#pragma warning(pop)
 
     result = ini.SaveFile(configFile.c_str());
     CHECK_LOG_SI_ERROR(result, "save");

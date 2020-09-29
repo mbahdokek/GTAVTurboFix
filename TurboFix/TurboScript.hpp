@@ -34,6 +34,7 @@ public:
 protected:
     void runPtfxAudio(Vehicle vehicle, uint32_t popCount, float currentThrottle);
     float updateAntiLag(float currentBoost, float newBoost);
+    void updateDial(float newBoost);
     void updateTurbo();
 
     CScriptSettings mSettings;

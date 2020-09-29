@@ -38,4 +38,12 @@ public:
     bool AntiLag = false;
     uint32_t BaseLoudCount = 12;
 
+    // DashHook
+    float DialBoostOffset = 0.0f;
+    float DialBoostScale = 1.0f;
+
+    float DialVacuumOffset = 0.0f;
+    float DialVacuumScale = 1.0f;
+
+    bool DialBoostIncludesVacuum = false;
 };

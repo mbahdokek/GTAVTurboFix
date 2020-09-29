@@ -100,6 +100,8 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.BoolOption("Anti-lag", config->AntiLag,
             { "Anti-lag keeps the turbo spinning when off-throttle at higher RPMs." });
 
+        mbCtx.MenuOption("Dial settings", "dialsettingsmenu", { "Remap the turbo dial" });
+
         if (mbCtx.Option("Save changes")) {
             config->Write();
             UI::Notify("Saved changes", true);
@@ -126,6 +128,33 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             context.LoadConfigs();
             context.UpdateActiveConfig();
         }
+        });
+
+    /* mainmenu -> editconfigmenu -> dialsettingsmenu */
+    submenus.emplace_back("dialsettingsmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
+        mbCtx.Title("Config edit");
+        CConfig* config = context.ActiveConfig();
+        mbCtx.Subtitle(config ? config->Name : "None");
+
+        if (config == nullptr) {
+            mbCtx.Option("No active configuration");
+            return;
+        }
+
+        mbCtx.FloatOptionCb("Dial offset (boost)", config->DialBoostOffset, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
+            { "Starting offset of the boost dial." });
+
+        mbCtx.FloatOptionCb("Dial scale (boost)", config->DialBoostScale, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
+            { "Scaling of the boost dial." });
+
+        mbCtx.FloatOptionCb("Dial offset (vacuum)", config->DialVacuumOffset, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
+            { "Starting offset of the vacuum dial." });
+
+        mbCtx.FloatOptionCb("Dial scale (vacuum)", config->DialVacuumScale, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
+            { "Scaling of the vacuum dial." });
+
+        mbCtx.BoolOption("Dial boost includes vacuum", config->DialBoostIncludesVacuum,
+            { "Remap vacuum data to the boost dial, for combined vacuum and boost dials. Vacuum offset is ignored." });
         });
     return submenus;
 }

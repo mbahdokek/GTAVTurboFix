@@ -190,6 +190,40 @@ float CTurboScript::updateAntiLag(float currentBoost, float newBoost) {
     return newBoost;
 }
 
+void CTurboScript::updateDial(float newBoost) {
+    if (DashHook::Available()) {
+        VehicleDashboardData dashData{};
+        DashHook::GetData(&dashData);
+        float boostNorm = newBoost;
+
+        if (mActiveConfig->DialBoostIncludesVacuum) {
+            float boost = boostNorm;
+            boost += mActiveConfig->DialBoostOffset; // Add offset
+
+            if (boostNorm >= 0.0f) {
+                boost *= mActiveConfig->DialBoostScale;
+            }
+            else {
+                boost *= mActiveConfig->DialVacuumScale;
+            }
+            dashData.boost = boost;
+        }
+        else {
+            float boost = std::clamp(boostNorm, 0.0f, 1.0f);
+            boost *= mActiveConfig->DialBoostScale; // scale (0.0, 1.0)
+            boost += mActiveConfig->DialBoostOffset; // Add offset
+            dashData.boost = boost;
+        }
+
+        float vacuum = std::clamp(map(boostNorm, -1.0f, 0.0f, 0.0f, 1.0f), 0.0f, 1.0f);
+        vacuum *= mActiveConfig->DialVacuumScale; // scale (0.0, 1.0)
+        vacuum -= mActiveConfig->DialVacuumOffset; // Add offset
+        dashData.vacuum = vacuum;
+
+        DashHook::SetData(dashData);
+    }
+}
+
 void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, float currentThrottle) {
     uint32_t maxPopCount = mActiveConfig->BaseLoudCount;
     Vector3 camPos = CAM::GET_GAMEPLAY_CAM_COORD();
@@ -290,15 +324,6 @@ void CTurboScript::updateTurbo() {
         newBoost = updateAntiLag(currentBoost, newBoost);
     }
 
-    if (DashHook::Available()) {
-        VehicleDashboardData dashData{};
-        DashHook::GetData(&dashData);
-        float boostNorm = TF_GetNormalizedBoost();
-        dashData.boost = std::clamp(boostNorm, 0.0f, 1.0f);
-        dashData.vacuum = map(boostNorm, -1.0f, 0.0f, 0.0f, 1.0f);
-        dashData.vacuum = std::clamp(dashData.vacuum, 0.0f, 1.0f);
-        DashHook::SetData(dashData);
-    }
-
+    updateDial(TF_GetNormalizedBoost());
     VExt::SetTurbo(mVehicle, newBoost);
 }

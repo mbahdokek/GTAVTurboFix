@@ -194,31 +194,29 @@ void CTurboScript::updateDial(float newBoost) {
     if (DashHook::Available()) {
         VehicleDashboardData dashData{};
         DashHook::GetData(&dashData);
-        float boostNorm = newBoost;
 
         if (mActiveConfig->DialBoostIncludesVacuum) {
-            float boost = boostNorm;
-            boost += mActiveConfig->DialBoostOffset; // Add offset
-
-            if (boostNorm >= 0.0f) {
+            float boost = newBoost;
+            
+            if (newBoost >= 0.0f)
                 boost *= mActiveConfig->DialBoostScale;
-            }
-            else {
+            else
                 boost *= mActiveConfig->DialVacuumScale;
-            }
+
+            boost += mActiveConfig->DialBoostOffset;
             dashData.boost = boost;
         }
         else {
-            float boost = std::clamp(boostNorm, 0.0f, 1.0f);
+            float boost = std::clamp(map(newBoost, 0.0f, mActiveConfig->MaxBoost, 0.0f, 1.0f), 0.0f, 1.0f);
             boost *= mActiveConfig->DialBoostScale; // scale (0.0, 1.0)
             boost += mActiveConfig->DialBoostOffset; // Add offset
             dashData.boost = boost;
-        }
 
-        float vacuum = std::clamp(map(boostNorm, -1.0f, 0.0f, 0.0f, 1.0f), 0.0f, 1.0f);
-        vacuum *= mActiveConfig->DialVacuumScale; // scale (0.0, 1.0)
-        vacuum -= mActiveConfig->DialVacuumOffset; // Add offset
-        dashData.vacuum = vacuum;
+            float vacuum = std::clamp(map(newBoost, mActiveConfig->MinBoost, 0.0f, 0.0f, 1.0f), 0.0f, 1.0f);
+            vacuum *= mActiveConfig->DialVacuumScale; // scale (0.0, 1.0)
+            vacuum += mActiveConfig->DialVacuumOffset; // Add offset
+            dashData.vacuum = vacuum;
+        }
 
         DashHook::SetData(dashData);
     }
@@ -337,6 +335,6 @@ void CTurboScript::updateTurbo() {
         newBoost = updateAntiLag(currentBoost, newBoost);
     }
 
-    updateDial(TF_GetNormalizedBoost());
+    updateDial(newBoost);
     VExt::SetTurbo(mVehicle, newBoost);
 }

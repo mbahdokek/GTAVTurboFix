@@ -132,7 +132,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
 
     /* mainmenu -> editconfigmenu -> dialsettingsmenu */
     submenus.emplace_back("dialsettingsmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
-        mbCtx.Title("Config edit");
+        mbCtx.Title("Dial adjustment");
         CConfig* config = context.ActiveConfig();
         mbCtx.Subtitle(config ? config->Name : "None");
 
@@ -142,16 +142,16 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         }
 
         mbCtx.FloatOptionCb("Dial offset (boost)", config->DialBoostOffset, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
-            { "Starting offset of the boost dial." });
+            { "Starting offset of the boost dial. Press Enter to manually enter a number." });
 
         mbCtx.FloatOptionCb("Dial scale (boost)", config->DialBoostScale, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
-            { "Scaling of the boost dial." });
+            { "Scaling of the boost dial. Press Enter to manually enter a number." });
 
         mbCtx.FloatOptionCb("Dial offset (vacuum)", config->DialVacuumOffset, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
-            { "Starting offset of the vacuum dial." });
+            { "Starting offset of the vacuum dial. Press Enter to manually enter a number." });
 
         mbCtx.FloatOptionCb("Dial scale (vacuum)", config->DialVacuumScale, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
-            { "Scaling of the vacuum dial." });
+            { "Scaling of the vacuum dial. Press Enter to manually enter a number." });
 
         mbCtx.BoolOption("Dial boost includes vacuum", config->DialBoostIncludesVacuum,
             { "Remap vacuum data to the boost dial, for combined vacuum and boost dials. Vacuum offset is ignored." });

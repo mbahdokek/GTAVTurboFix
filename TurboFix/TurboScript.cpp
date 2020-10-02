@@ -308,23 +308,27 @@ void CTurboScript::updateTurbo() {
         mActiveConfig->MinBoost,
         mActiveConfig->MaxBoost);
 
-    // closed throttle: vacuum
-    // open throttle: boost ~ RPM * throttle
+    // No throttle:
+    //   0.2 RPM -> NA
+    //   1.0 RPM -> MinBoost
+    //
+    // Full throttle:
+    //   0.2 RPM to RPMSpoolStart -> NA
+    //   RPMSpoolEnd to 1.0 RPM -> MaxBoost
 
-    float rpm = VExt::GetCurrentRPM(mVehicle);
-    rpm = map(rpm, 
-        mActiveConfig->RPMSpoolStart, 
-        mActiveConfig->RPMSpoolEnd,
-        0.0f, 
-        1.0f);
-    rpm = std::clamp(rpm, 0.0f, 1.0f);
+    float boostClosed = map(VExt::GetCurrentRPM(mVehicle), 
+        0.2f, 1.0f, 
+        0.0f, mActiveConfig->MinBoost);
+    boostClosed = std::clamp(boostClosed, mActiveConfig->MinBoost, 0.0f);
 
-    float throttle = abs(VExt::GetThrottle(mVehicle));
+    float boostWOT = map(VExt::GetCurrentRPM(mVehicle), 
+        mActiveConfig->RPMSpoolStart, mActiveConfig->RPMSpoolEnd,
+        0.0f, mActiveConfig->MaxBoost);
+    boostWOT = std::clamp(boostWOT, 0.0f, mActiveConfig->MaxBoost);
 
-    float now = throttle * rpm;
-    now = map(now, 0.0f, 1.0f, 
-        mActiveConfig->MinBoost, 
-        mActiveConfig->MaxBoost);
+    float now = map(abs(VExt::GetThrottle(mVehicle)), 
+        0.0f, 1.0f, 
+        boostClosed, boostWOT);
 
     float lerpRate;
     if (now > currentBoost)

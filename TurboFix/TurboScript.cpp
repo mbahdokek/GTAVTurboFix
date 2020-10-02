@@ -190,6 +190,38 @@ float CTurboScript::updateAntiLag(float currentBoost, float newBoost) {
     return newBoost;
 }
 
+void CTurboScript::updateDial(float newBoost) {
+    if (DashHook::Available()) {
+        VehicleDashboardData dashData{};
+        DashHook::GetData(&dashData);
+
+        if (mActiveConfig->DialBoostIncludesVacuum) {
+            float boost = newBoost;
+            
+            if (newBoost >= 0.0f)
+                boost *= mActiveConfig->DialBoostScale;
+            else
+                boost *= mActiveConfig->DialVacuumScale;
+
+            boost += mActiveConfig->DialBoostOffset;
+            dashData.boost = boost;
+        }
+        else {
+            float boost = std::clamp(map(newBoost, 0.0f, mActiveConfig->MaxBoost, 0.0f, 1.0f), 0.0f, 1.0f);
+            boost *= mActiveConfig->DialBoostScale; // scale (0.0, 1.0)
+            boost += mActiveConfig->DialBoostOffset; // Add offset
+            dashData.boost = boost;
+
+            float vacuum = std::clamp(map(newBoost, mActiveConfig->MinBoost, 0.0f, 0.0f, 1.0f), 0.0f, 1.0f);
+            vacuum *= mActiveConfig->DialVacuumScale; // scale (0.0, 1.0)
+            vacuum += mActiveConfig->DialVacuumOffset; // Add offset
+            dashData.vacuum = vacuum;
+        }
+
+        DashHook::SetData(dashData);
+    }
+}
+
 void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, float currentThrottle) {
     uint32_t maxPopCount = mActiveConfig->BaseLoudCount;
     Vector3 camPos = CAM::GET_GAMEPLAY_CAM_COORD();
@@ -249,8 +281,14 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, float curren
 }
 
 void CTurboScript::updateTurbo() {
-    if (!VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo))
+    if (!VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo) ||
+        !VEHICLE::GET_IS_VEHICLE_ENGINE_RUNNING(mVehicle)) {
+        float currentBoost = VExt::GetTurbo(mVehicle);
+        float newBoost = lerp(currentBoost, 0.0f, 1.0f - pow(1.0f - mActiveConfig->UnspoolRate, MISC::GET_FRAME_TIME()));
+        updateDial(newBoost);
+        VExt::SetTurbo(mVehicle, newBoost);
         return;
+    }
 
     float currentBoost = VExt::GetTurbo(mVehicle);
     currentBoost = std::clamp(currentBoost,
@@ -290,15 +328,6 @@ void CTurboScript::updateTurbo() {
         newBoost = updateAntiLag(currentBoost, newBoost);
     }
 
-    if (DashHook::Available()) {
-        VehicleDashboardData dashData{};
-        DashHook::GetData(&dashData);
-        float boostNorm = TF_GetNormalizedBoost();
-        dashData.boost = std::clamp(boostNorm, 0.0f, 1.0f);
-        dashData.vacuum = map(boostNorm, -1.0f, 0.0f, 0.0f, 1.0f);
-        dashData.vacuum = std::clamp(dashData.vacuum, 0.0f, 1.0f);
-        DashHook::SetData(dashData);
-    }
-
+    updateDial(newBoost);
     VExt::SetTurbo(mVehicle, newBoost);
 }

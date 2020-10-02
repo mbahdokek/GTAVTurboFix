@@ -281,15 +281,8 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, float curren
 }
 
 void CTurboScript::updateTurbo() {
-    if (!VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo)) {
-        float currentBoost = VExt::GetTurbo(mVehicle);
-        float newBoost = lerp(currentBoost, 0.0f, 1.0f - pow(1.0f - mActiveConfig->UnspoolRate, MISC::GET_FRAME_TIME()));
-        updateDial(newBoost);
-        VExt::SetTurbo(mVehicle, newBoost);
-        return;
-    }
-
-    if (!VEHICLE::GET_IS_VEHICLE_ENGINE_RUNNING(mVehicle)) {
+    if (!VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo) ||
+        !VEHICLE::GET_IS_VEHICLE_ENGINE_RUNNING(mVehicle)) {
         float currentBoost = VExt::GetTurbo(mVehicle);
         float newBoost = lerp(currentBoost, 0.0f, 1.0f - pow(1.0f - mActiveConfig->UnspoolRate, MISC::GET_FRAME_TIME()));
         updateDial(newBoost);

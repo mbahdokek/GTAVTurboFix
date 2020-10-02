@@ -196,12 +196,25 @@ void CTurboScript::updateDial(float newBoost) {
         DashHook::GetData(&dashData);
 
         if (mActiveConfig->DialBoostIncludesVacuum) {
-            float boost = newBoost;
+            float boost;
             
-            if (newBoost >= 0.0f)
+            if (newBoost >= 0.0f) {
+                boost = map(newBoost, 0.0f, mActiveConfig->MaxBoost, 0.0f, 1.0f);
                 boost *= mActiveConfig->DialBoostScale;
-            else
+            }
+            else {
+                boost = map(newBoost, mActiveConfig->MinBoost, 0.0f, -1.0f, 0.0f);
                 boost *= mActiveConfig->DialVacuumScale;
+            }
+
+            // Attempt at smoothing boost/vacuum transition, but too much headache to get right.
+            // float boostScale = map(newBoost,
+            //     mActiveConfig->MinBoost, -mActiveConfig->MinBoost,
+            //     mActiveConfig->DialVacuumScale, mActiveConfig->DialBoostScale);
+            // float minScale = std::min(mActiveConfig->DialVacuumScale, mActiveConfig->DialBoostScale);
+            // float maxScale = std::max(mActiveConfig->DialVacuumScale, mActiveConfig->DialBoostScale);
+            // boostScale = std::clamp(boostScale, minScale, maxScale);
+            // boost *= boostScale;
 
             boost += mActiveConfig->DialBoostOffset;
             dashData.boost = boost;

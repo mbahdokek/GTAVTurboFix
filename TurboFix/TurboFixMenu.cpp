@@ -76,31 +76,34 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         }
 
         mbCtx.FloatOptionCb("RPM Spool Start", config->RPMSpoolStart, 0.0f, 1.0f, 0.01f, MenuUtils::GetKbFloat,
-            { "At what RPM the turbo starts spooling up.",
+            { "At what RPM the turbo starts building boost.",
               "0.2 RPM is idle." });
 
         mbCtx.FloatOptionCb("RPM Spool End", config->RPMSpoolEnd, 0.0f, 1.0f, 0.01f, MenuUtils::GetKbFloat,
-            { "At what RPM the turbo spooling rate is maximal.",
+            { "At what RPM the turbo boost is maximal.",
               "1.0 RPM is rev limit." });
 
-        mbCtx.FloatOptionCb("Min boost", config->MinBoost, -1.0f, 1.0f, 0.01f, MenuUtils::GetKbFloat,
-            { "What the idle boost/vacuum is." });
+        mbCtx.FloatOptionCb("Min boost", config->MinBoost, -1000000.0f, 0.0f, 0.01f, MenuUtils::GetKbFloat,
+            { "What the max vacuum is, e.g. when closing the throttle at high RPM.",
+              "Keep this at a similar amplitude to max boost."});
 
-        mbCtx.FloatOptionCb("Max boost", config->MaxBoost, -1.0f, 1000000.0f, 0.01f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("Max boost", config->MaxBoost, 0.0f, 1000000.0f, 0.01f, MenuUtils::GetKbFloat,
             { "What full boost is." });
 
-        mbCtx.FloatOptionCb("Spool rate", config->SpoolRate, 0.01f, 0.99999f, 0.00005f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("Spool rate", config->SpoolRate, 0.01f, 0.999999f, 0.00005f, MenuUtils::GetKbFloat,
             { "How fast the turbo spools up, in part per 1 second.",
               "So 0.5 is it spools up to half its max after 1 second.",
               "0.999 is almost instant. Keep under 1.0." });
 
-        mbCtx.FloatOptionCb("Unspool rate", config->UnspoolRate, 0.01f, 0.99999f, 0.00005f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("Unspool rate", config->UnspoolRate, 0.01f, 0.999999f, 0.00005f, MenuUtils::GetKbFloat,
             { "How fast the turbo slows down. Calculation is same as above." });
 
         mbCtx.BoolOption("Anti-lag", config->AntiLag,
             { "Anti-lag keeps the turbo spinning when off-throttle at higher RPMs." });
 
-        mbCtx.MenuOption("Dial settings", "dialsettingsmenu", { "Remap the turbo dial" });
+        mbCtx.MenuOption("Dial settings", "dialsettingsmenu", 
+            { "Remap the turbo dial on vehicle dashboards.",
+              "DashHook and a vehicle with working boost gauge are required for this feature." });
 
         if (mbCtx.Option("Save changes")) {
             config->Write();

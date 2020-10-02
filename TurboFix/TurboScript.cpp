@@ -285,9 +285,12 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, float curren
         auto* soundBass = mSoundEngine->play3D("TurboFix\\Sounds\\EX_POP_SUB.wav", { bonePos.x, bonePos.y, bonePos.z });
 
         GRAPHICS::USE_PARTICLE_FX_ASSET("core");
-        auto createdPart = GRAPHICS::START_PARTICLE_FX_LOOPED_ON_ENTITY_BONE("veh_backfire", vehicle, 0.0, 0.0, 0.0, 0.0,
-            0.0,
-            0.0, boneIdx, explSz, false, false, false);
+
+        Vector3 vehRot = ENTITY::GET_ENTITY_ROTATION(vehicle, 0);
+        auto createdPart = GRAPHICS::START_PARTICLE_FX_LOOPED_AT_COORD("veh_backfire",
+            bonePos.x, bonePos.y, bonePos.z,
+            vehRot.x, vehRot.y, vehRot.z,
+            explSz, false, false, false, false);
 
         GRAPHICS::STOP_PARTICLE_FX_LOOPED(createdPart, 1);
     }

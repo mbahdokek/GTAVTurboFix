@@ -88,7 +88,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
               "Keep this at a similar amplitude to max boost."});
 
         mbCtx.FloatOptionCb("Max boost", config->MaxBoost, 0.0f, 1000000.0f, 0.01f, MenuUtils::GetKbFloat,
-            { "What full boost is." });
+            { "What full boost is. A value of 1.0 adds 10% of the current engine power." });
 
         mbCtx.FloatOptionCb("Spool rate", config->SpoolRate, 0.01f, 0.999999f, 0.00005f, MenuUtils::GetKbFloat,
             { "How fast the turbo spools up, in part per 1 second.",

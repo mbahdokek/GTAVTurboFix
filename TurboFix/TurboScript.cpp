@@ -34,9 +34,9 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     }
 
     mSoundNames = {
-        "TurboFix\\Sounds\\GUNSHOT_0.wav",
-        "TurboFix\\Sounds\\GUNSHOT_1.wav",
-        "TurboFix\\Sounds\\GUNSHOT_2.wav",
+        "TurboFix\\Sounds\\EX_POP_0.wav",
+        "TurboFix\\Sounds\\EX_POP_1.wav",
+        "TurboFix\\Sounds\\EX_POP_2.wav",
     };
 
     mExhaustBones = {

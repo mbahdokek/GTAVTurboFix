@@ -237,11 +237,12 @@ void CTurboScript::updateDial(float newBoost) {
 
 void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, float currentThrottle) {
     uint32_t maxPopCount = mActiveConfig->BaseLoudCount;
-    Vector3 camPos = CAM::GET_GAMEPLAY_CAM_COORD();
-    Vector3 camRot = CAM::GET_GAMEPLAY_CAM_ROT(0);
+
+    Vector3 camPos = CAM::GET_FINAL_RENDERED_CAM_COORD();
+    Vector3 camRot = CAM::GET_FINAL_RENDERED_CAM_ROT(0);
     Vector3 camDir = RotationToDirection(camRot);
 
-    // UI::DrawSphere(camPos + camDir, 0.125f, 255, 0, 0, 255);
+    // UI::DrawSphere(camPos + camDir * 0.25f, 0.0625f, 255, 0, 0, 255);
 
     mSoundEngine->setListenerPosition(
         irrklang::vec3df( camPos.x, camPos.y, camPos.z ),

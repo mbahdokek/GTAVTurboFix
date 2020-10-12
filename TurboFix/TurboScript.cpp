@@ -135,21 +135,22 @@ uint32_t CTurboScript::LoadSoundSets() {
     }
 
     for (const auto& dirEntry : fs::directory_iterator(soundSetsPath)) {
-        if (!fs::is_directory(fs::path(dirEntry))) {
-            logger.Write(DEBUG, "Skipping [%s] - not a directory", dirEntry.path().c_str());
+        auto path = fs::path(dirEntry);
+        if (!fs::is_directory(path)) {
+            logger.Write(DEBUG, "Skipping [%s] - not a directory", path.stem().string().c_str());
             continue;
         }
 
-        if (!std::filesystem::exists(fs::path(dirEntry) / "EX_POP_0.wav") ||
-            !std::filesystem::exists(fs::path(dirEntry) / "EX_POP_1.wav") ||
-            !std::filesystem::exists(fs::path(dirEntry) / "EX_POP_2.wav") ||
-            !std::filesystem::exists(fs::path(dirEntry) / "EX_POP_SUB.wav")) {
-            logger.Write(WARN, "Skipping [%s] - missing a sound file.", dirEntry.path().c_str());
+        if (!std::filesystem::exists(path / "EX_POP_0.wav") ||
+            !std::filesystem::exists(path / "EX_POP_1.wav") ||
+            !std::filesystem::exists(path / "EX_POP_2.wav") ||
+            !std::filesystem::exists(path / "EX_POP_SUB.wav")) {
+            logger.Write(WARN, "Skipping [%s] - missing a sound file.", path.stem().string().c_str());
             continue;
         }
 
         mSoundSets.push_back(fs::path(dirEntry).stem().string());
-        logger.Write(DEBUG, "Added sound set [%s]", fs::path(dirEntry).stem().string().c_str());
+        logger.Write(DEBUG, "Added sound set [%s]", path.stem().string().c_str());
     }
 
     logger.Write(DEBUG, "Added sound set [NoSound]");

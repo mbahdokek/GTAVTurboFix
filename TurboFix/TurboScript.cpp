@@ -152,6 +152,7 @@ uint32_t CTurboScript::LoadSoundSets() {
         logger.Write(DEBUG, "Added sound set [%s]", fs::path(dirEntry).stem().string().c_str());
     }
 
+    logger.Write(DEBUG, "Added sound set [NoSound]");
     mSoundSets.emplace_back("NoSound");
 
     logger.Write(INFO, "Sound sets loaded: %d", mSoundSets.size());

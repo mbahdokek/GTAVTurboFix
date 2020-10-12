@@ -34,11 +34,8 @@ void TurboFix::ScriptMain() {
     script.Settings().Load();
     logger.Write(INFO, "Settings loaded");
 
-    uint32_t configsLoaded = script.LoadConfigs();
-    logger.Write(INFO, "%u Configs loaded", configsLoaded);
-
-    uint32_t soundSetsLoaded = script.LoadSoundSets();
-    logger.Write(INFO, "%u Sound sets loaded");
+    script.LoadConfigs();
+    script.LoadSoundSets();
 
     if (!Patches::Test()) {
         logger.Write(ERROR, "[PATCH] Test failed");
@@ -51,8 +48,9 @@ void TurboFix::ScriptMain() {
     Compatibility::Setup();
 
     CScriptMenu menu(settingsMenuPath, 
-        []() {
-            // OnInit: Nope
+        [&script]() {
+            // OnInit
+            script.LoadSoundSets();
         },
         []() {
             // OnExit: Nope

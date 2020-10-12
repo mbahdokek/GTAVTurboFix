@@ -13,6 +13,7 @@
 
 #include <inc/enums.h>
 #include <inc/natives.h>
+#include <fmt/format.h>
 #include <filesystem>
 #include <algorithm>
 
@@ -23,20 +24,19 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     , mDefaultConfig{}
     , mVehicle(0)
     , mActiveConfig(nullptr)
-    , mLastAntilagDelay(0) {
+    , mLastAntilagDelay(0)
+    , mPopCount(0)
+    , mLastThrottle(0)
+    , mSoundSetIndex(0) {
     mDefaultConfig.Name = "Default";
     mSoundEngine = irrklang::createIrrKlangDevice(irrklang::ESOD_DIRECT_SOUND_8);
     mSoundEngine->setDefault3DSoundMinDistance(7.5f);
     mSoundEngine->setSoundVolume(0.20f);
 
-    for (uint32_t i = 0; i < 10; ++i) {
-        
-    }
-
     mSoundNames = {
-        "TurboFix\\Sounds\\EX_POP_0.wav",
-        "TurboFix\\Sounds\\EX_POP_1.wav",
-        "TurboFix\\Sounds\\EX_POP_2.wav",
+        "EX_POP_0.wav",
+        "EX_POP_1.wav",
+        "EX_POP_2.wav",
     };
 
     mExhaustBones = {
@@ -117,7 +117,49 @@ float CTurboScript::GetCurrentBoost() {
     return 0.0f;
 }
 
-unsigned CTurboScript::LoadConfigs() {
+uint32_t CTurboScript::LoadSoundSets() {
+    namespace fs = std::filesystem;
+
+    const std::string soundSetsPath =
+        Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
+        Constants::ModDir +
+        "\\Sounds";
+
+    logger.Write(DEBUG, "Clearing and reloading sound sets");
+
+    mSoundSets.clear();
+
+    if (!(fs::exists(fs::path(soundSetsPath)) && fs::is_directory(fs::path(soundSetsPath)))) {
+        logger.Write(ERROR, "Directory [%s] not found!", soundSetsPath.c_str());
+        return 0;
+    }
+
+    for (const auto& dirEntry : fs::directory_iterator(soundSetsPath)) {
+        if (!fs::is_directory(fs::path(dirEntry))) {
+            logger.Write(DEBUG, "Skipping [%s] - not a directory", dirEntry.path().c_str());
+            continue;
+        }
+
+        if (!std::filesystem::exists(fs::path(dirEntry) / "EX_POP_0.wav") ||
+            !std::filesystem::exists(fs::path(dirEntry) / "EX_POP_1.wav") ||
+            !std::filesystem::exists(fs::path(dirEntry) / "EX_POP_2.wav") ||
+            !std::filesystem::exists(fs::path(dirEntry) / "EX_POP_SUB.wav")) {
+            logger.Write(WARN, "Skipping [%s] - missing a sound file.", dirEntry.path().c_str());
+            continue;
+        }
+
+        mSoundSets.push_back(fs::path(dirEntry).stem().string());
+        logger.Write(DEBUG, "Added sound set [%s]", fs::path(dirEntry).stem().string().c_str());
+    }
+
+    mSoundSets.emplace_back("NoSound");
+
+    logger.Write(INFO, "Sound sets loaded: %d", mSoundSets.size());
+
+    return static_cast<unsigned>(mSoundSets.size());
+}
+
+uint32_t CTurboScript::LoadConfigs() {
     namespace fs = std::filesystem;
 
     const std::string configsPath =
@@ -134,9 +176,9 @@ unsigned CTurboScript::LoadConfigs() {
         return 0;
     }
 
-    for (auto& file : fs::directory_iterator(configsPath)) {
+    for (const auto& file : fs::directory_iterator(configsPath)) {
         if (Util::to_lower(fs::path(file).extension().string()) != ".ini") {
-            logger.Write(DEBUG, "Skipping [%d] - not .ini", file.path().c_str());
+            logger.Write(DEBUG, "Skipping [%s] - not .ini", file.path().c_str());
             continue;
         }
 
@@ -167,7 +209,8 @@ float CTurboScript::updateAntiLag(float currentBoost, float newBoost) {
         //   -> 20 combustion strokes per cylinder per second
         //   -> 50ms between combusions per cylinder -> 10ms average?
         if (MISC::GET_GAME_TIMER() > static_cast<int>(mLastAntilagDelay) + rand() % 50 + 50) {
-            runPtfxAudio(mVehicle, mPopCount, currentThrottle);
+            if (mActiveConfig->AntiLagEffects)
+                runEffects(mVehicle, mPopCount, currentThrottle);
 
             float boostAdd = mActiveConfig->MaxBoost - currentBoost;
             boostAdd = boostAdd * (static_cast<float>(rand() % 7 + 4) * 0.1f);
@@ -235,15 +278,15 @@ void CTurboScript::updateDial(float newBoost) {
     }
 }
 
-void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, float currentThrottle) {
-    uint32_t maxPopCount = mActiveConfig->BaseLoudCount;
+void CTurboScript::runEffects(Vehicle vehicle, uint32_t popCount, float currentThrottle) {
+    uint32_t maxPopCount = mActiveConfig->AntiLagSoundTicks;
 
     Vector3 camPos = CAM::GET_FINAL_RENDERED_CAM_COORD();
     Vector3 camRot = CAM::GET_FINAL_RENDERED_CAM_ROT(0);
     Vector3 camDir = RotationToDirection(camRot);
 
     // UI::DrawSphere(camPos + camDir * 0.25f, 0.0625f, 255, 0, 0, 255);
-
+    mSoundEngine->setSoundVolume(mActiveConfig->AntiLagSoundVolume);
     mSoundEngine->setListenerPosition(
         irrklang::vec3df( camPos.x, camPos.y, camPos.z ),
         irrklang::vec3df( camDir.x, camDir.y, camDir.z ),
@@ -265,7 +308,7 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, float curren
         Vector3 bonePos = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(vehicle, boneIdx);
         float explSz;
         std::string soundName;
-
+        const std::string soundNameBass = "EX_POP_SUB.wav";
         // UI::DrawSphere(bonePos, 0.125f, 0, 255, 0, 255);
 
         if (loud) {
@@ -275,15 +318,26 @@ void CTurboScript::runPtfxAudio(Vehicle vehicle, uint32_t popCount, float curren
         }
         else if (popCount < maxPopCount + rand() % maxPopCount && maxPopCount > 0) {
             explSz = 1.4f;
-            soundName = "TurboFix\\Sounds\\EX_POP_SUB.wav";
+            soundName = soundNameBass;
         }
         else {
             explSz = 0.9f;
             soundName = std::string();
         }
-        if (!soundName.empty())
-            auto* soundBackfire = mSoundEngine->play3D(soundName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
-        auto* soundBass = mSoundEngine->play3D("TurboFix\\Sounds\\EX_POP_SUB.wav", { bonePos.x, bonePos.y, bonePos.z });
+
+        if (mActiveConfig->AntiLagSoundSet != "NoSound") {
+                std::string soundFinalName =
+                fmt::format(R"({}\Sounds\{}\{})", Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
+                    Constants::ModDir, mActiveConfig->AntiLagSoundSet, soundName);
+            std::string soundBassFinalName =
+                fmt::format(R"({}\Sounds\{}\{})", Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
+                    Constants::ModDir, mActiveConfig->AntiLagSoundSet, soundNameBass);
+
+            if (!soundName.empty())
+                mSoundEngine->play3D(soundFinalName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
+
+            mSoundEngine->play3D(soundBassFinalName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
+        }
 
         GRAPHICS::USE_PARTICLE_FX_ASSET("core");
 

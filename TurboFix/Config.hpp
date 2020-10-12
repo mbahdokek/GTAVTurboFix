@@ -35,8 +35,18 @@ public:
     // How many % of no boost after 1 second: 0.97f
     float UnspoolRate = 0.97f;
 
+    // AntiLag
     bool AntiLag = false;
-    uint32_t BaseLoudCount = 12;
+
+    bool AntiLagEffects = true;
+
+    // "Default", "NoSound" or some custom stuff
+    std::string AntiLagSoundSet = "Default";
+
+    // Tick-based
+    int AntiLagSoundTicks = 12;
+
+    float AntiLagSoundVolume = 0.5f;
 
     // DashHook
     float DialBoostOffset = 0.0f;

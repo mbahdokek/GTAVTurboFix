@@ -28,11 +28,20 @@ public:
 
     float GetCurrentBoost();
 
-    unsigned LoadConfigs();
+    uint32_t LoadSoundSets();
+    uint32_t LoadConfigs();
     void UpdateActiveConfig();
 
+    const std::vector<std::string>& GetSoundSets() {
+        return mSoundSets;
+    }
+
+    int& SoundSetIndex() {
+        return mSoundSetIndex;
+    }
+
 protected:
-    void runPtfxAudio(Vehicle vehicle, uint32_t popCount, float currentThrottle);
+    void runEffects(Vehicle vehicle, uint32_t popCount, float currentThrottle);
     float updateAntiLag(float currentBoost, float newBoost);
     void updateDial(float newBoost);
     void updateTurbo();
@@ -48,6 +57,9 @@ protected:
     uint32_t mPopCount;
 
     float mLastThrottle;
+
+    std::vector<std::string> mSoundSets;
+    int mSoundSetIndex;
 
     irrklang::ISoundEngine* mSoundEngine;
     std::vector<std::string> mSoundNames;

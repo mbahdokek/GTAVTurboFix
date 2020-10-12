@@ -34,8 +34,11 @@ void TurboFix::ScriptMain() {
     script.Settings().Load();
     logger.Write(INFO, "Settings loaded");
 
-    auto loaded = script.LoadConfigs();
-    logger.Write(INFO, "%u Configs loaded", loaded);
+    uint32_t configsLoaded = script.LoadConfigs();
+    logger.Write(INFO, "%u Configs loaded", configsLoaded);
+
+    uint32_t soundSetsLoaded = script.LoadSoundSets();
+    logger.Write(INFO, "%u Sound sets loaded");
 
     if (!Patches::Test()) {
         logger.Write(ERROR, "[PATCH] Test failed");

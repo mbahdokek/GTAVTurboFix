@@ -50,7 +50,13 @@ CConfig CConfig::Read(const std::string& configFile) {
     config.MaxBoost = ini.GetDoubleValue("Turbo", "MaxBoost", config.MaxBoost);
     config.SpoolRate = ini.GetDoubleValue("Turbo", "SpoolRate", config.SpoolRate);
     config.UnspoolRate = ini.GetDoubleValue("Turbo", "UnspoolRate", config.UnspoolRate);
-    config.AntiLag = ini.GetBoolValue("Turbo", "AntiLag", config.AntiLag);
+
+    // [AntiLag]
+    config.AntiLag = ini.GetBoolValue("AntiLag", "AntiLag", config.AntiLag);
+    config.AntiLagEffects = ini.GetBoolValue("AntiLag", "Effects", config.AntiLagEffects);
+    config.AntiLagSoundSet = ini.GetValue("AntiLag", "SoundSet", config.AntiLagSoundSet.c_str());
+    config.AntiLagSoundTicks = ini.GetLongValue("AntiLag", "SoundFrequency", config.AntiLagSoundTicks);
+    config.AntiLagSoundVolume = ini.GetBoolValue("AntiLag", "SoundVolume", config.AntiLagSoundVolume);
 
     // [Dial]
     config.DialBoostOffset = ini.GetDoubleValue("Dial", "BoostOffset", config.DialBoostOffset);
@@ -84,7 +90,13 @@ void CConfig::Write() {
     ini.SetDoubleValue("Turbo", "MaxBoost", MaxBoost);
     ini.SetDoubleValue("Turbo", "SpoolRate", SpoolRate);
     ini.SetDoubleValue("Turbo", "UnspoolRate", UnspoolRate);
-    ini.SetBoolValue("Turbo", "AntiLag", AntiLag);
+
+    // [AntiLag]
+    ini.SetBoolValue("AntiLag", "AntiLag", AntiLag);
+    ini.SetBoolValue("AntiLag", "Effects", AntiLagEffects);
+    ini.SetValue("AntiLag", "SoundSet", AntiLagSoundSet.c_str());
+    ini.SetLongValue("AntiLag", "SoundFrequency", AntiLagSoundTicks);
+    ini.SetBoolValue("AntiLag", "SoundVolume", AntiLagSoundVolume);
 
     // [Dial]
     ini.SetDoubleValue("Dial", "BoostOffset", DialBoostOffset);
@@ -123,7 +135,13 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
     ini.SetDoubleValue("Turbo", "MaxBoost", MaxBoost);
     ini.SetDoubleValue("Turbo", "SpoolRate", SpoolRate);
     ini.SetDoubleValue("Turbo", "UnspoolRate", UnspoolRate);
-    ini.SetBoolValue("Turbo", "AntiLag", AntiLag);
+
+    // [AntiLag]
+    ini.SetBoolValue("AntiLag", "AntiLag", AntiLag);
+    ini.SetBoolValue("AntiLag", "Effects", AntiLagEffects);
+    ini.SetValue("AntiLag", "SoundSet", AntiLagSoundSet.c_str());
+    ini.SetLongValue("AntiLag", "SoundFrequency", AntiLagSoundTicks);
+    ini.SetBoolValue("AntiLag", "SoundVolume", AntiLagSoundVolume);
 
     // [Dial]
     ini.SetDoubleValue("Dial", "BoostOffset", DialBoostOffset);

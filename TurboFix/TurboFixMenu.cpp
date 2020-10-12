@@ -98,7 +98,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.FloatOptionCb("Unspool rate", config->UnspoolRate, 0.01f, 0.999999f, 0.00005f, MenuUtils::GetKbFloat,
             { "How fast the turbo slows down. Calculation is same as above." });
 
-        mbCtx.BoolOption("Anti-lag", config->AntiLag,
+        mbCtx.MenuOption("Anti-lag settings", "antilagsettingsmenu",
             { "Anti-lag keeps the turbo spinning when off-throttle at higher RPMs." });
 
         mbCtx.MenuOption("Dial settings", "dialsettingsmenu", 
@@ -158,6 +158,25 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
 
         mbCtx.BoolOption("Dial boost includes vacuum", config->DialBoostIncludesVacuum,
             { "Remap vacuum data to the boost dial, for combined vacuum and boost dials. Vacuum offset is ignored." });
+        });
+
+    submenus.emplace_back("antilagsettingsmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
+        mbCtx.Title("Anti-lag");
+        CConfig* config = context.ActiveConfig();
+        mbCtx.Subtitle(config ? config->Name : "None");
+
+        if (config == nullptr) {
+            mbCtx.Option("No active configuration");
+            return;
+        }
+
+        mbCtx.BoolOption("Enable", config->AntiLag);
+        mbCtx.BoolOption("Effects", config->AntiLagEffects, { "Exhaust pops, bangs and fire." });
+        if (mbCtx.StringArray("Sound set", context.GetSoundSets(), context.SoundSetIndex())) {
+            config->AntiLagSoundSet = context.GetSoundSets()[context.SoundSetIndex()];
+        }
+        mbCtx.IntOption("Loud duration (ticks)", config->AntiLagSoundTicks, 0, 100, 1);
+        mbCtx.FloatOptionCb("Volume", config->AntiLagSoundVolume, 0.0f, 2.0f, 0.05f, MenuUtils::GetKbFloat);
         });
     return submenus;
 }

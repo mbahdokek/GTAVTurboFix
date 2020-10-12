@@ -46,7 +46,7 @@ public:
     // Tick-based
     int AntiLagSoundTicks = 12;
 
-    float AntiLagSoundVolume = 0.5f;
+    float AntiLagSoundVolume = 0.25f;
 
     // DashHook
     float DialBoostOffset = 0.0f;

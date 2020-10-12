@@ -56,7 +56,7 @@ CConfig CConfig::Read(const std::string& configFile) {
     config.AntiLagEffects = ini.GetBoolValue("AntiLag", "Effects", config.AntiLagEffects);
     config.AntiLagSoundSet = ini.GetValue("AntiLag", "SoundSet", config.AntiLagSoundSet.c_str());
     config.AntiLagSoundTicks = ini.GetLongValue("AntiLag", "SoundFrequency", config.AntiLagSoundTicks);
-    config.AntiLagSoundVolume = ini.GetBoolValue("AntiLag", "SoundVolume", config.AntiLagSoundVolume);
+    config.AntiLagSoundVolume = ini.GetDoubleValue("AntiLag", "SoundVolume", config.AntiLagSoundVolume);
 
     // [Dial]
     config.DialBoostOffset = ini.GetDoubleValue("Dial", "BoostOffset", config.DialBoostOffset);
@@ -96,7 +96,7 @@ void CConfig::Write() {
     ini.SetBoolValue("AntiLag", "Effects", AntiLagEffects);
     ini.SetValue("AntiLag", "SoundSet", AntiLagSoundSet.c_str());
     ini.SetLongValue("AntiLag", "SoundFrequency", AntiLagSoundTicks);
-    ini.SetBoolValue("AntiLag", "SoundVolume", AntiLagSoundVolume);
+    ini.SetDoubleValue("AntiLag", "SoundVolume", AntiLagSoundVolume);
 
     // [Dial]
     ini.SetDoubleValue("Dial", "BoostOffset", DialBoostOffset);
@@ -141,7 +141,7 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
     ini.SetBoolValue("AntiLag", "Effects", AntiLagEffects);
     ini.SetValue("AntiLag", "SoundSet", AntiLagSoundSet.c_str());
     ini.SetLongValue("AntiLag", "SoundFrequency", AntiLagSoundTicks);
-    ini.SetBoolValue("AntiLag", "SoundVolume", AntiLagSoundVolume);
+    ini.SetDoubleValue("AntiLag", "SoundVolume", AntiLagSoundVolume);
 
     // [Dial]
     ini.SetDoubleValue("Dial", "BoostOffset", DialBoostOffset);

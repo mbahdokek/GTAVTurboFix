@@ -1,15 +1,11 @@
 #include "TurboScript.hpp"
 
-#include "TurboFix.h"
 #include "Compatibility.h"
 #include "Constants.hpp"
 #include "Util/Math.hpp"
 #include "Util/Paths.hpp"
-#include "Util/Logger.hpp"
 #include "Util/Game.hpp"
-#include "Util/String.hpp"
 #include "Util/UI.hpp"
-#include "Memory/Patches.h"
 
 #include <inc/enums.h>
 #include <inc/natives.h>

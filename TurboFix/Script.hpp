@@ -4,7 +4,9 @@
 
 namespace TurboFix {
     void ScriptMain();
+    void UpdateNPC();
     std::vector<CScriptMenu<CTurboScript>::CSubmenu> BuildMenu();
 
     CTurboScript* GetScript();
+    uint64_t GetNPCScriptCount();
 }

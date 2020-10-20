@@ -59,6 +59,7 @@
     <ClCompile Include="Compatibility.cpp">
       <Filter>Compatibility</Filter>
     </ClCompile>
+    <ClCompile Include="TurboScriptNPC.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Util">
@@ -163,6 +164,7 @@
     <ClInclude Include="..\thirdparty\irrKlang\include\irrKlang.h">
       <Filter>Compatibility</Filter>
     </ClInclude>
+    <ClInclude Include="TurboScriptNPC.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\thirdparty\irrKlang\lib\Winx64-visualStudio\irrKlang.lib">

@@ -27,7 +27,8 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     , mLastAntilagDelay(0)
     , mPopCount(0)
     , mLastThrottle(0)
-    , mSoundSetIndex(0) {
+    , mSoundSetIndex(0)
+    , mIsNPC(false) {
     mDefaultConfig.Name = "Default";
     mSoundEngine = irrklang::createIrrKlangDevice(irrklang::ESOD_DIRECT_SOUND_8);
     mSoundEngine->setDefault3DSoundMinDistance(7.5f);
@@ -61,10 +62,12 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
 
 CTurboScript::~CTurboScript() = default;
 
-void CTurboScript::UpdateActiveConfig() {
-    if (!Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false)) {
-        mActiveConfig = nullptr;
-        return;
+void CTurboScript::UpdateActiveConfig(bool playerCheck) {
+    if (playerCheck) {
+        if (!Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false)) {
+            mActiveConfig = nullptr;
+            return;
+        }
     }
 
     Hash model = ENTITY::GET_ENTITY_MODEL(mVehicle);
@@ -102,7 +105,8 @@ void CTurboScript::Tick() {
     if (playerVehicle != mVehicle) {
         mVehicle = playerVehicle;
 
-        UpdateActiveConfig();
+        UpdateActiveConfig(true);
+        // TODO: Patching: Put check somewhere else
         Patches::BoostLimiter(mActiveConfig && Settings().Main.Enable);
     }
 
@@ -358,7 +362,8 @@ void CTurboScript::updateTurbo() {
         !VEHICLE::GET_IS_VEHICLE_ENGINE_RUNNING(mVehicle)) {
         float currentBoost = VExt::GetTurbo(mVehicle);
         float newBoost = lerp(currentBoost, 0.0f, 1.0f - pow(1.0f - mActiveConfig->UnspoolRate, MISC::GET_FRAME_TIME()));
-        updateDial(newBoost);
+        if (!mIsNPC)
+            updateDial(newBoost);
         VExt::SetTurbo(mVehicle, newBoost);
         return;
     }
@@ -405,6 +410,17 @@ void CTurboScript::updateTurbo() {
         newBoost = updateAntiLag(currentBoost, newBoost);
     }
 
-    updateDial(newBoost);
+    if (!mIsNPC)
+        updateDial(newBoost);
+
+    if (mSettings.Debug.NPCDetails) {
+        Vector3 loc = ENTITY::GET_ENTITY_COORDS(mVehicle, true);
+        loc.z += 1.0f;
+        UI::ShowText3D(loc, {
+            { fmt::format("Cfg: {}", mActiveConfig->Name) },
+            { fmt::format("Boost: {}", newBoost) },
+        });
+    }
+
     VExt::SetTurbo(mVehicle, newBoost);
 }

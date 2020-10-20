@@ -29,6 +29,8 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.MenuOption(fmt::format("Active config: {}", activeConfig ? activeConfig->Name : "None"),
             "editconfigmenu",
             { "Enter to edit the current configuration." });
+
+        mbCtx.MenuOption("Developer options", "developermenu");
         });
 
     /* mainmenu -> configsmenu */
@@ -38,7 +40,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
 
         if (mbCtx.Option("Reload configs")) {
             context.LoadConfigs();
-            context.UpdateActiveConfig();
+            context.UpdateActiveConfig(true);
         }
 
         for (const auto& config : context.Configs()) {
@@ -109,7 +111,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             config->Write();
             UI::Notify("Saved changes", true);
             context.LoadConfigs();
-            context.UpdateActiveConfig();
+            context.UpdateActiveConfig(true);
         }
 
         if (mbCtx.Option("Save as...")) {
@@ -129,7 +131,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             else
                 UI::Notify("Failed to save as new configuration", true);
             context.LoadConfigs();
-            context.UpdateActiveConfig();
+            context.UpdateActiveConfig(true);
         }
         });
 
@@ -160,6 +162,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             { "Remap vacuum data to the boost dial, for combined vacuum and boost dials. Vacuum offset is ignored." });
         });
 
+    /* mainmenu -> editconfigmenu -> antilagsettingsmenu */
     submenus.emplace_back("antilagsettingsmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
         mbCtx.Title("Anti-lag");
         CConfig* config = context.ActiveConfig();
@@ -178,5 +181,15 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.IntOption("Loud duration (ticks)", config->AntiLagSoundTicks, 0, 100, 1);
         mbCtx.FloatOptionCb("Volume", config->AntiLagSoundVolume, 0.0f, 2.0f, 0.05f, MenuUtils::GetKbFloat);
         });
+
+    /* mainmenu -> developermenu */
+    submenus.emplace_back("developermenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
+        mbCtx.Title("Developer options");
+        mbCtx.Subtitle("");
+
+        mbCtx.Option(fmt::format("NPC instances: {}", TurboFix::GetNPCScriptCount()));
+        mbCtx.BoolOption("NPC Details", context.Settings().Debug.NPCDetails);
+        });
+
     return submenus;
 }

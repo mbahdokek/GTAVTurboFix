@@ -11,8 +11,8 @@
 class CTurboScript {
 public:
     CTurboScript(const std::string& settingsFile);
-    ~CTurboScript();
-    void Tick();
+    virtual ~CTurboScript();
+    virtual void Tick();
 
     CScriptSettings& Settings() {
         return mSettings;
@@ -30,7 +30,7 @@ public:
 
     uint32_t LoadSoundSets();
     uint32_t LoadConfigs();
-    void UpdateActiveConfig();
+    void UpdateActiveConfig(bool playerCheck);
 
     const std::vector<std::string>& GetSoundSets() {
         return mSoundSets;
@@ -38,6 +38,10 @@ public:
 
     int& SoundSetIndex() {
         return mSoundSetIndex;
+    }
+
+    Vehicle GetVehicle() {
+        return mVehicle;
     }
 
 protected:
@@ -64,4 +68,6 @@ protected:
     irrklang::ISoundEngine* mSoundEngine;
     std::vector<std::string> mSoundNames;
     std::vector<std::string> mExhaustBones;
+
+    bool mIsNPC;
 };

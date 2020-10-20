@@ -12,6 +12,10 @@ public:
         bool Enable = true;
     } Main;
 
+    struct {
+        bool NPCDetails = false;
+    } Debug;
+
 private:
     std::string mSettingsFile;
 };

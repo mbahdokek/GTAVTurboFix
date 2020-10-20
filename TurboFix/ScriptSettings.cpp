@@ -22,6 +22,7 @@ void CScriptSettings::Load() {
     CHECK_LOG_SI_ERROR(result, "load");
 
     Main.Enable = ini.GetBoolValue("Main", "Enable", true);
+    Debug.NPCDetails = ini.GetBoolValue("Debug", "NPCDetails", false);
 }
 
 void CScriptSettings::Save() {
@@ -31,6 +32,7 @@ void CScriptSettings::Save() {
     CHECK_LOG_SI_ERROR(result, "load");
 
     ini.SetBoolValue("Main", "Enable", Main.Enable);
+    ini.SetBoolValue("Debug", "NPCDetails", Debug.NPCDetails);
 
     result = ini.SaveFile(mSettingsFile.c_str());
     CHECK_LOG_SI_ERROR(result, "save");

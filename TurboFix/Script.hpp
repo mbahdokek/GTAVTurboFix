@@ -5,6 +5,7 @@
 namespace TurboFix {
     void ScriptMain();
     void UpdateNPC();
+    void UpdateActiveConfigs();
     void UpdatePatch();
     std::vector<CScriptMenu<CTurboScript>::CSubmenu> BuildMenu();
 

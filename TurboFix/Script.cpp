@@ -121,6 +121,15 @@ void TurboFix::UpdateNPC() {
     }
 }
 
+void TurboFix::UpdateActiveConfigs() {
+    if (playerScriptInst)
+        playerScriptInst->UpdateActiveConfig(true);
+
+    for (const auto& inst : npcScriptInsts) {
+        inst->UpdateActiveConfig(false);
+    }
+}
+
 void TurboFix::UpdatePatch() {
     if (settings->Main.Enable &&
         (playerScriptInst->ActiveConfig() != nullptr ||
@@ -166,6 +175,7 @@ uint32_t TurboFix::LoadConfigs() {
 
     if (!(fs::exists(fs::path(configsPath)) && fs::is_directory(fs::path(configsPath)))) {
         logger.Write(ERROR, "Directory [%s] not found!", configsPath.c_str());
+        TurboFix::UpdateActiveConfigs();
         return 0;
     }
 
@@ -192,6 +202,7 @@ uint32_t TurboFix::LoadConfigs() {
     }
     logger.Write(INFO, "Configs loaded: %d", configs.size());
 
+    TurboFix::UpdateActiveConfigs();
     return static_cast<unsigned>(configs.size());
 }
 

@@ -40,7 +40,6 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
 
         if (mbCtx.Option("Reload configs")) {
             TurboFix::LoadConfigs();
-            context.UpdateActiveConfig(true);
         }
 
         for (const auto& config : TurboFix::GetConfigs()) {
@@ -111,7 +110,6 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             config->Write();
             UI::Notify("Saved changes", true);
             TurboFix::LoadConfigs();
-            context.UpdateActiveConfig(true);
         }
 
         if (mbCtx.Option("Save as...")) {
@@ -131,7 +129,6 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             else
                 UI::Notify("Failed to save as new configuration", true);
             TurboFix::LoadConfigs();
-            context.UpdateActiveConfig(true);
         }
         });
 

@@ -19,7 +19,10 @@
 
 using VExt = VehicleExtensions;
 
-CTurboScript::CTurboScript(CScriptSettings& settings, std::vector<CConfig>& configs)
+CTurboScript::CTurboScript(
+    CScriptSettings& settings,
+    std::vector<CConfig>& configs,
+    std::vector<std::string>& soundSets)
     : mSettings(settings)
     , mConfigs(configs)
     , mDefaultConfig(configs[0])
@@ -28,6 +31,7 @@ CTurboScript::CTurboScript(CScriptSettings& settings, std::vector<CConfig>& conf
     , mLastAntilagDelay(0)
     , mPopCount(0)
     , mLastThrottle(0)
+    , mSoundSets(soundSets)
     , mSoundSetIndex(0)
     , mIsNPC(false) {
 
@@ -118,50 +122,6 @@ float CTurboScript::GetCurrentBoost() {
     if (mActiveConfig)
         return VExt::GetTurbo(mVehicle);
     return 0.0f;
-}
-
-uint32_t CTurboScript::LoadSoundSets() {
-    namespace fs = std::filesystem;
-
-    const std::string soundSetsPath =
-        Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
-        Constants::ModDir +
-        "\\Sounds";
-
-    logger.Write(DEBUG, "Clearing and reloading sound sets");
-
-    mSoundSets.clear();
-
-    if (!(fs::exists(fs::path(soundSetsPath)) && fs::is_directory(fs::path(soundSetsPath)))) {
-        logger.Write(ERROR, "Directory [%s] not found!", soundSetsPath.c_str());
-        return 0;
-    }
-
-    for (const auto& dirEntry : fs::directory_iterator(soundSetsPath)) {
-        auto path = fs::path(dirEntry);
-        if (!fs::is_directory(path)) {
-            logger.Write(DEBUG, "Skipping [%s] - not a directory", path.stem().string().c_str());
-            continue;
-        }
-
-        if (!std::filesystem::exists(path / "EX_POP_0.wav") ||
-            !std::filesystem::exists(path / "EX_POP_1.wav") ||
-            !std::filesystem::exists(path / "EX_POP_2.wav") ||
-            !std::filesystem::exists(path / "EX_POP_SUB.wav")) {
-            logger.Write(WARN, "Skipping [%s] - missing a sound file.", path.stem().string().c_str());
-            continue;
-        }
-
-        mSoundSets.push_back(fs::path(dirEntry).stem().string());
-        logger.Write(DEBUG, "Added sound set [%s]", path.stem().string().c_str());
-    }
-
-    logger.Write(DEBUG, "Added sound set [NoSound]");
-    mSoundSets.emplace_back("NoSound");
-
-    logger.Write(INFO, "Sound sets loaded: %d", mSoundSets.size());
-
-    return static_cast<unsigned>(mSoundSets.size());
 }
 
 float CTurboScript::updateAntiLag(float currentBoost, float newBoost) {

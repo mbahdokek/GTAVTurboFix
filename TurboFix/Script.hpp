@@ -11,7 +11,9 @@ namespace TurboFix {
     CScriptSettings& GetSettings();
     CTurboScript* GetScript();
     uint64_t GetNPCScriptCount();
+    const std::vector<CConfig>& GetConfigs();
+    const std::vector<std::string>& GetSoundSets();
 
     uint32_t LoadConfigs();
-    const std::vector<CConfig>& GetConfigs();
+    uint32_t LoadSoundSets();
 }

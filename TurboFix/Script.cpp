@@ -25,6 +25,7 @@ namespace {
     std::vector<std::shared_ptr<CTurboScriptNPC>> npcScriptInsts;
 
     std::vector<CConfig> configs;
+    std::vector<std::string> soundSets;
 }
 
 void TurboFix::ScriptMain() {
@@ -38,12 +39,13 @@ void TurboFix::ScriptMain() {
         "\\settings_menu.ini";
 
     settings = std::make_shared<CScriptSettings>(settingsGeneralPath);
-    playerScriptInst = std::make_shared<CTurboScript>(*settings, configs);
     settings->Load();
     logger.Write(INFO, "Settings loaded");
 
     TurboFix::LoadConfigs();
-    playerScriptInst->LoadSoundSets();
+    TurboFix::LoadSoundSets();
+
+    playerScriptInst = std::make_shared<CTurboScript>(*settings, configs, soundSets);
 
     if (!Patches::Test()) {
         logger.Write(ERROR, "[PATCH] Test failed");
@@ -59,7 +61,8 @@ void TurboFix::ScriptMain() {
     CScriptMenu menu(settingsMenuPath, 
         []() {
             // OnInit
-            playerScriptInst->LoadSoundSets();
+            TurboFix::LoadConfigs();
+            TurboFix::LoadSoundSets();
         },
         []() {
             // OnExit: Nope
@@ -94,11 +97,9 @@ void TurboFix::UpdateNPC() {
         });
 
         if (it == npcScriptInsts.end()) {
-            npcScriptInsts.push_back(std::make_shared<CTurboScriptNPC>(vehicle, *settings, configs));
+            npcScriptInsts.push_back(std::make_shared<CTurboScriptNPC>(vehicle, *settings, configs, soundSets));
             auto npcScriptInst = npcScriptInsts.back();
 
-            // TODO: This can be more elegant (regarding logging)
-            npcScriptInst->LoadSoundSets();
             npcScriptInst->UpdateActiveConfig(false);
         }
     }
@@ -147,6 +148,10 @@ const std::vector<CConfig>& TurboFix::GetConfigs() {
     return configs;
 }
 
+const std::vector<std::string>& TurboFix::GetSoundSets() {
+    return soundSets;
+}
+
 uint32_t TurboFix::LoadConfigs() {
     namespace fs = std::filesystem;
 
@@ -188,4 +193,48 @@ uint32_t TurboFix::LoadConfigs() {
     logger.Write(INFO, "Configs loaded: %d", configs.size());
 
     return static_cast<unsigned>(configs.size());
+}
+
+uint32_t TurboFix::LoadSoundSets() {
+    namespace fs = std::filesystem;
+
+    const std::string soundSetsPath =
+        Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
+        Constants::ModDir +
+        "\\Sounds";
+
+    logger.Write(DEBUG, "Clearing and reloading sound sets");
+
+    soundSets.clear();
+
+    if (!(fs::exists(fs::path(soundSetsPath)) && fs::is_directory(fs::path(soundSetsPath)))) {
+        logger.Write(ERROR, "Directory [%s] not found!", soundSetsPath.c_str());
+        return 0;
+    }
+
+    for (const auto& dirEntry : fs::directory_iterator(soundSetsPath)) {
+        auto path = fs::path(dirEntry);
+        if (!fs::is_directory(path)) {
+            logger.Write(DEBUG, "Skipping [%s] - not a directory", path.stem().string().c_str());
+            continue;
+        }
+
+        if (!std::filesystem::exists(path / "EX_POP_0.wav") ||
+            !std::filesystem::exists(path / "EX_POP_1.wav") ||
+            !std::filesystem::exists(path / "EX_POP_2.wav") ||
+            !std::filesystem::exists(path / "EX_POP_SUB.wav")) {
+            logger.Write(WARN, "Skipping [%s] - missing a sound file.", path.stem().string().c_str());
+            continue;
+        }
+
+        soundSets.push_back(fs::path(dirEntry).stem().string());
+        logger.Write(DEBUG, "Added sound set [%s]", path.stem().string().c_str());
+    }
+
+    logger.Write(DEBUG, "Added sound set [NoSound]");
+    soundSets.emplace_back("NoSound");
+
+    logger.Write(INFO, "Sound sets loaded: %d", soundSets.size());
+
+    return static_cast<unsigned>(soundSets.size());
 }

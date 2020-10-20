@@ -10,7 +10,10 @@
 
 class CTurboScript {
 public:
-    CTurboScript(CScriptSettings& settings, std::vector<CConfig>& configs);
+    CTurboScript(
+        CScriptSettings& settings,
+        std::vector<CConfig>& configs,
+        std::vector<std::string>& soundSets);
     virtual ~CTurboScript();
     virtual void Tick();
 
@@ -20,13 +23,7 @@ public:
 
     float GetCurrentBoost();
 
-    uint32_t LoadSoundSets();
-
     void UpdateActiveConfig(bool playerCheck);
-
-    const std::vector<std::string>& GetSoundSets() {
-        return mSoundSets;
-    }
 
     int& SoundSetIndex() {
         return mSoundSetIndex;
@@ -54,7 +51,7 @@ protected:
 
     float mLastThrottle;
 
-    std::vector<std::string> mSoundSets;
+    std::vector<std::string>& mSoundSets;
     int mSoundSetIndex;
 
     irrklang::ISoundEngine* mSoundEngine;

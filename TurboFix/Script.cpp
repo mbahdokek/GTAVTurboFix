@@ -16,7 +16,7 @@
 using namespace TurboFix;
 
 namespace {
-    std::shared_ptr<CTurboScript> scriptInst;
+    std::shared_ptr<CTurboScript> playerScriptInst;
 }
 
 void TurboFix::ScriptMain() {
@@ -29,28 +29,27 @@ void TurboFix::ScriptMain() {
         Constants::ModDir +
         "\\settings_menu.ini";
 
-    scriptInst = std::make_shared<CTurboScript>(settingsGeneralPath);
-    CTurboScript& script = *scriptInst;
-    script.Settings().Load();
+    playerScriptInst = std::make_shared<CTurboScript>(settingsGeneralPath);
+    playerScriptInst->Settings().Load();
     logger.Write(INFO, "Settings loaded");
 
-    script.LoadConfigs();
-    script.LoadSoundSets();
+    playerScriptInst->LoadConfigs();
+    playerScriptInst->LoadSoundSets();
 
     if (!Patches::Test()) {
         logger.Write(ERROR, "[PATCH] Test failed");
         Patches::Error = true;
     }
     else {
-        Patches::BoostLimiter(script.Settings().Main.Enable);
+        Patches::BoostLimiter(playerScriptInst->Settings().Main.Enable);
     }
     VehicleExtensions::Init();
     Compatibility::Setup();
 
     CScriptMenu menu(settingsMenuPath, 
-        [&script]() {
+        []() {
             // OnInit
-            script.LoadSoundSets();
+            playerScriptInst->LoadSoundSets();
         },
         []() {
             // OnExit: Nope
@@ -59,12 +58,12 @@ void TurboFix::ScriptMain() {
     );
 
     while(true) {
-        script.Tick();
-        menu.Tick(script);
+        playerScriptInst->Tick();
+        menu.Tick(*playerScriptInst);
         WAIT(0);
     }
 }
 
 CTurboScript* TurboFix::GetScript() {
-    return scriptInst.get();
+    return playerScriptInst.get();
 }

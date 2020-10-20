@@ -17,9 +17,9 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.Title("Turbo Fix");
         mbCtx.Subtitle(std::string("~b~") + Constants::DisplayVersion);
 
-        if (mbCtx.BoolOption("Enable", context.Settings().Main.Enable,
+        if (mbCtx.BoolOption("Enable", TurboFix::GetSettings().Main.Enable,
             { "Enable or disable the entire script." })) {
-            Patches::BoostLimiter(context.Settings().Main.Enable);
+            Patches::BoostLimiter(TurboFix::GetSettings().Main.Enable);
         }
 
         mbCtx.MenuOption("Configs", "configsmenu",
@@ -39,11 +39,11 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.Subtitle("Overview");
 
         if (mbCtx.Option("Reload configs")) {
-            context.LoadConfigs();
+            TurboFix::LoadConfigs();
             context.UpdateActiveConfig(true);
         }
 
-        for (const auto& config : context.Configs()) {
+        for (const auto& config : TurboFix::GetConfigs()) {
             bool selected;
             mbCtx.OptionPlus(config.Name, {}, &selected);
 
@@ -110,7 +110,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         if (mbCtx.Option("Save changes")) {
             config->Write();
             UI::Notify("Saved changes", true);
-            context.LoadConfigs();
+            TurboFix::LoadConfigs();
             context.UpdateActiveConfig(true);
         }
 
@@ -130,7 +130,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
                 UI::Notify("Saved as new configuration", true);
             else
                 UI::Notify("Failed to save as new configuration", true);
-            context.LoadConfigs();
+            TurboFix::LoadConfigs();
             context.UpdateActiveConfig(true);
         }
         });
@@ -188,7 +188,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.Subtitle("");
 
         mbCtx.Option(fmt::format("NPC instances: {}", TurboFix::GetNPCScriptCount()));
-        mbCtx.BoolOption("NPC Details", context.Settings().Debug.NPCDetails);
+        mbCtx.BoolOption("NPC Details", TurboFix::GetSettings().Debug.NPCDetails);
         });
 
     return submenus;

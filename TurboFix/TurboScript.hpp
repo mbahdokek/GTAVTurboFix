@@ -10,17 +10,9 @@
 
 class CTurboScript {
 public:
-    CTurboScript(const std::string& settingsFile);
+    CTurboScript(CScriptSettings& settings, std::vector<CConfig>& configs);
     virtual ~CTurboScript();
     virtual void Tick();
-
-    CScriptSettings& Settings() {
-        return mSettings;
-    }
-
-    const std::vector<CConfig>& Configs() {
-        return mConfigs;
-    }
 
     CConfig* ActiveConfig() {
         return mActiveConfig;
@@ -29,7 +21,7 @@ public:
     float GetCurrentBoost();
 
     uint32_t LoadSoundSets();
-    uint32_t LoadConfigs();
+
     void UpdateActiveConfig(bool playerCheck);
 
     const std::vector<std::string>& GetSoundSets() {
@@ -50,8 +42,8 @@ protected:
     void updateDial(float newBoost);
     void updateTurbo();
 
-    CScriptSettings mSettings;
-    std::vector<CConfig> mConfigs;
+    const CScriptSettings& mSettings;
+    std::vector<CConfig>& mConfigs;
     CConfig mDefaultConfig;
 
     Vehicle mVehicle;

@@ -19,9 +19,10 @@
 
 using VExt = VehicleExtensions;
 
-CTurboScript::CTurboScript(const std::string& settingsFile)
-    : mSettings(settingsFile)
-    , mDefaultConfig{}
+CTurboScript::CTurboScript(CScriptSettings& settings, std::vector<CConfig>& configs)
+    : mSettings(settings)
+    , mConfigs(configs)
+    , mDefaultConfig(configs[0])
     , mVehicle(0)
     , mActiveConfig(nullptr)
     , mLastAntilagDelay(0)
@@ -29,7 +30,7 @@ CTurboScript::CTurboScript(const std::string& settingsFile)
     , mLastThrottle(0)
     , mSoundSetIndex(0)
     , mIsNPC(false) {
-    mDefaultConfig.Name = "Default";
+
     mSoundEngine = irrklang::createIrrKlangDevice(irrklang::ESOD_DIRECT_SOUND_8);
     mSoundEngine->setDefault3DSoundMinDistance(7.5f);
     mSoundEngine->setSoundVolume(0.20f);
@@ -106,8 +107,6 @@ void CTurboScript::Tick() {
         mVehicle = playerVehicle;
 
         UpdateActiveConfig(true);
-        // TODO: Patching: Put check somewhere else
-        Patches::BoostLimiter(mActiveConfig && Settings().Main.Enable);
     }
 
     if (mActiveConfig && Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false) && mSettings.Main.Enable) {
@@ -163,49 +162,6 @@ uint32_t CTurboScript::LoadSoundSets() {
     logger.Write(INFO, "Sound sets loaded: %d", mSoundSets.size());
 
     return static_cast<unsigned>(mSoundSets.size());
-}
-
-uint32_t CTurboScript::LoadConfigs() {
-    namespace fs = std::filesystem;
-
-    const std::string configsPath =
-        Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
-        Constants::ModDir +
-        "\\Configs";
-
-    logger.Write(DEBUG, "Clearing and reloading configs");
-
-    mConfigs.clear();
-
-    if (!(fs::exists(fs::path(configsPath)) && fs::is_directory(fs::path(configsPath)))) {
-        logger.Write(ERROR, "Directory [%s] not found!", configsPath.c_str());
-        return 0;
-    }
-
-    for (const auto& file : fs::directory_iterator(configsPath)) {
-        if (Util::to_lower(fs::path(file).extension().string()) != ".ini") {
-            logger.Write(DEBUG, "Skipping [%s] - not .ini", file.path().c_str());
-            continue;
-        }
-
-        CConfig config = CConfig::Read(fs::path(file).string());
-        if (config.Name == "default") {
-            mDefaultConfig = config;
-            continue;
-        }
-
-        if (config.Models.empty() && config.Plates.empty()) {
-            logger.Write(WARN,
-                "Vehicle settings file [%s] contained no model names or plates, ignoring it",
-                file.path().c_str());
-            continue;
-        }
-        mConfigs.push_back(config);
-        logger.Write(DEBUG, "Loaded vehicle config [%s]", config.Name.c_str());
-    }
-    logger.Write(INFO, "Configs loaded: %d", mConfigs.size());
-
-    return static_cast<unsigned>(mConfigs.size());
 }
 
 float CTurboScript::updateAntiLag(float currentBoost, float newBoost) {

@@ -1,7 +1,7 @@
 #include "TurboScriptNPC.hpp"
 
-CTurboScriptNPC::CTurboScriptNPC(Vehicle vehicle, const std::string& settingsFile)
-    : CTurboScript(settingsFile) {
+CTurboScriptNPC::CTurboScriptNPC(Vehicle vehicle, CScriptSettings& settings, std::vector<CConfig>& configs)
+    : CTurboScript(settings, configs) {
     mIsNPC = true;
     mVehicle = vehicle;
 }

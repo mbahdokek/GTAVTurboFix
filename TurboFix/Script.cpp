@@ -9,17 +9,22 @@
 #include "Memory/Patches.h"
 #include "Util/Logger.hpp"
 #include "Util/Paths.hpp"
+#include "Util/String.hpp"
 
 #include <inc/natives.h>
 #include <inc/main.h>
 #include <fmt/format.h>
 #include <memory>
+#include <filesystem>
 
 using namespace TurboFix;
 
 namespace {
+    std::shared_ptr<CScriptSettings> settings;
     std::shared_ptr<CTurboScript> playerScriptInst;
     std::vector<std::shared_ptr<CTurboScriptNPC>> npcScriptInsts;
+
+    std::vector<CConfig> configs;
 }
 
 void TurboFix::ScriptMain() {
@@ -32,11 +37,12 @@ void TurboFix::ScriptMain() {
         Constants::ModDir +
         "\\settings_menu.ini";
 
-    playerScriptInst = std::make_shared<CTurboScript>(settingsGeneralPath);
-    playerScriptInst->Settings().Load();
+    settings = std::make_shared<CScriptSettings>(settingsGeneralPath);
+    playerScriptInst = std::make_shared<CTurboScript>(*settings, configs);
+    settings->Load();
     logger.Write(INFO, "Settings loaded");
 
-    playerScriptInst->LoadConfigs();
+    TurboFix::LoadConfigs();
     playerScriptInst->LoadSoundSets();
 
     if (!Patches::Test()) {
@@ -44,8 +50,9 @@ void TurboFix::ScriptMain() {
         Patches::Error = true;
     }
     else {
-        Patches::BoostLimiter(playerScriptInst->Settings().Main.Enable);
+        Patches::BoostLimiter(settings->Main.Enable);
     }
+
     VehicleExtensions::Init();
     Compatibility::Setup();
 
@@ -64,6 +71,7 @@ void TurboFix::ScriptMain() {
         playerScriptInst->Tick();
         menu.Tick(*playerScriptInst);
         UpdateNPC();
+        UpdatePatch();
         WAIT(0);
     }
 }
@@ -86,18 +94,10 @@ void TurboFix::UpdateNPC() {
         });
 
         if (it == npcScriptInsts.end()) {
-            // TODO: Resolve somewhere else more sensible.
-            const std::string settingsGeneralPath =
-                Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
-                Constants::ModDir +
-                "\\settings_general.ini";
-
-            npcScriptInsts.push_back(std::make_shared<CTurboScriptNPC>(vehicle, settingsGeneralPath));
+            npcScriptInsts.push_back(std::make_shared<CTurboScriptNPC>(vehicle, *settings, configs));
             auto npcScriptInst = npcScriptInsts.back();
 
             // TODO: This can be more elegant (regarding logging)
-            npcScriptInst->Settings().Load();
-            npcScriptInst->LoadConfigs();
             npcScriptInst->LoadSoundSets();
             npcScriptInst->UpdateActiveConfig(false);
         }
@@ -120,10 +120,72 @@ void TurboFix::UpdateNPC() {
     }
 }
 
+void TurboFix::UpdatePatch() {
+    if (settings->Main.Enable &&
+        (playerScriptInst->ActiveConfig() != nullptr ||
+        !npcScriptInsts.empty())) {
+        Patches::BoostLimiter(true);
+    }
+    else {
+        Patches::BoostLimiter(false);
+    }
+}
+
+CScriptSettings& TurboFix::GetSettings() {
+    return *settings;
+}
+
 CTurboScript* TurboFix::GetScript() {
     return playerScriptInst.get();
 }
 
 uint64_t TurboFix::GetNPCScriptCount() {
     return npcScriptInsts.size();
+}
+
+const std::vector<CConfig>& TurboFix::GetConfigs() {
+    return configs;
+}
+
+uint32_t TurboFix::LoadConfigs() {
+    namespace fs = std::filesystem;
+
+    const std::string configsPath =
+        Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
+        Constants::ModDir +
+        "\\Configs";
+
+    logger.Write(DEBUG, "Clearing and reloading configs");
+
+    configs.clear();
+
+    if (!(fs::exists(fs::path(configsPath)) && fs::is_directory(fs::path(configsPath)))) {
+        logger.Write(ERROR, "Directory [%s] not found!", configsPath.c_str());
+        return 0;
+    }
+
+    for (const auto& file : fs::directory_iterator(configsPath)) {
+        if (Util::to_lower(fs::path(file).extension().string()) != ".ini") {
+            logger.Write(DEBUG, "Skipping [%s] - not .ini", file.path().c_str());
+            continue;
+        }
+
+        CConfig config = CConfig::Read(fs::path(file).string());
+        if (config.Name == "default") {
+            configs.insert(configs.begin(), config);
+            continue;
+        }
+
+        if (config.Models.empty() && config.Plates.empty()) {
+            logger.Write(WARN,
+                "Vehicle settings file [%s] contained no model names or plates, ignoring it",
+                file.path().c_str());
+            continue;
+        }
+        configs.push_back(config);
+        logger.Write(DEBUG, "Loaded vehicle config [%s]", config.Name.c_str());
+    }
+    logger.Write(INFO, "Configs loaded: %d", configs.size());
+
+    return static_cast<unsigned>(configs.size());
 }

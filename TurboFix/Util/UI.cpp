@@ -2,9 +2,18 @@
 
 #include <inc/enums.h>
 #include <inc/natives.h>
+#include <vector>
 
 namespace {
     int notificationId;
+
+    float GetStringWidth(const std::string& text, float scale, int font) {
+        HUD::_BEGIN_TEXT_COMMAND_GET_WIDTH("STRING");
+        HUD::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
+        HUD::SET_TEXT_FONT(font);
+        HUD::SET_TEXT_SCALE(scale, scale);
+        return HUD::_END_TEXT_COMMAND_GET_WIDTH(true);
+    }
 }
 
 void UI::Notify(const std::string& message, int* prevNotification) {
@@ -65,3 +74,26 @@ void UI::DrawSphere(Vector3 p, float scale, int r, int g, int b, int a) {
                           r, g, b, a,
                           false, false, 2, false, nullptr, nullptr, false);
 }
+
+void UI::ShowText3D(Vector3 location, const std::vector<std::string>& textLines) {
+    float height = 0.0125f;
+
+    GRAPHICS::SET_DRAW_ORIGIN(location.x, location.y, location.z, 0);
+    int i = 0;
+
+    float szX = 0.060f;
+    for (const auto& line : textLines) {
+        ShowText(0, 0 + height * static_cast<float>(i), 0.2f, line);
+        float currWidth = GetStringWidth(line, 0.2f, 0);
+        if (currWidth > szX) {
+            szX = currWidth;
+        }
+        i++;
+    }
+
+    float szY = (height * static_cast<float>(i)) + 0.02f;
+    GRAPHICS::DRAW_RECT(0.027f, (height * static_cast<float>(i)) / 2.0f, szX, szY,
+        0, 0, 0, 92, 0);
+    GRAPHICS::CLEAR_DRAW_ORIGIN();
+}
+

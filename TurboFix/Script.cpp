@@ -61,11 +61,13 @@ void TurboFix::ScriptMain() {
     CScriptMenu menu(settingsMenuPath, 
         []() {
             // OnInit
+            settings->Load();
             TurboFix::LoadConfigs();
             TurboFix::LoadSoundSets();
         },
         []() {
-            // OnExit: Nope
+            // OnExit
+            settings->Save();
         },
         BuildMenu()
     );

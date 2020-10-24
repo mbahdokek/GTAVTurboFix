@@ -51,6 +51,16 @@ CConfig CConfig::Read(const std::string& configFile) {
     config.SpoolRate = ini.GetDoubleValue("Turbo", "SpoolRate", config.SpoolRate);
     config.UnspoolRate = ini.GetDoubleValue("Turbo", "UnspoolRate", config.UnspoolRate);
 
+    // [BoostByGear]
+    config.BoostByGearEnable = ini.GetBoolValue("BoostByGear", "Enable", config.BoostByGearEnable);
+    config.BoostByGear.clear();
+    for (int i = 1; i < 11; ++i) {
+        double boost = ini.GetDoubleValue("BoostByGear", fmt::format("{}", i).c_str(), -2.0);
+        if (boost < -1.0)
+            break;
+        config.BoostByGear[i] = boost;
+    }
+
     // [AntiLag]
     config.AntiLag = ini.GetBoolValue("AntiLag", "AntiLag", config.AntiLag);
     config.AntiLagEffects = ini.GetBoolValue("AntiLag", "Effects", config.AntiLagEffects);
@@ -90,6 +100,16 @@ void CConfig::Write() {
     ini.SetDoubleValue("Turbo", "MaxBoost", MaxBoost);
     ini.SetDoubleValue("Turbo", "SpoolRate", SpoolRate);
     ini.SetDoubleValue("Turbo", "UnspoolRate", UnspoolRate);
+
+    // [BoostByGear]
+    ini.SetBoolValue("BoostByGear", "Enable", BoostByGearEnable);
+    for (int i = 1; i <= 10; ++i) {
+        ini.DeleteValue("BoostByGear", fmt::format("{}", i).c_str(), nullptr);
+    }
+
+    for (const auto& p : BoostByGear) {
+        ini.SetDoubleValue("BoostByGear", fmt::format("{}", p.first).c_str(), p.second);
+    }
 
     // [AntiLag]
     ini.SetBoolValue("AntiLag", "AntiLag", AntiLag);

@@ -314,9 +314,28 @@ void CTurboScript::updateTurbo() {
         lerpRate = mActiveConfig->UnspoolRate;
 
     float newBoost = lerp(currentBoost, now, 1.0f - pow(1.0f - lerpRate, MISC::GET_FRAME_TIME()));
-    newBoost = std::clamp(newBoost, 
-        mActiveConfig->MinBoost,
-        mActiveConfig->MaxBoost);
+
+    if (!mActiveConfig->BoostByGearEnable || mActiveConfig->BoostByGear.empty()) {
+        newBoost = std::clamp(newBoost,
+            mActiveConfig->MinBoost,
+            mActiveConfig->MaxBoost);
+    }
+    else {
+        auto currentGear = VExt::GetGearCurr(mVehicle);
+        auto topBoostKvp = mActiveConfig->BoostByGear.rbegin();
+
+        // Use 1st gear boost limit for reverse.
+        if (currentGear == 0)
+            currentGear = 1;
+
+        // Use top gear boost limit when missing in config.
+        if (currentGear > topBoostKvp->first)
+            currentGear = topBoostKvp->first;
+
+        newBoost = std::clamp(newBoost,
+            mActiveConfig->MinBoost,
+            mActiveConfig->BoostByGear[currentGear]);
+    }
 
     if (mActiveConfig->AntiLag) {
         newBoost = updateAntiLag(currentBoost, newBoost);

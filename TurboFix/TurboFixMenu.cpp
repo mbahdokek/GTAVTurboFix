@@ -102,6 +102,9 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.MenuOption("Anti-lag settings", "antilagsettingsmenu",
             { "Anti-lag keeps the turbo spinning when off-throttle at higher RPMs." });
 
+        mbCtx.MenuOption("Boost by gear", "boostbygearmenu",
+            { "Set boost levels for each gear." });
+
         mbCtx.MenuOption("Dial settings", "dialsettingsmenu", 
             { "Remap the turbo dial on vehicle dashboards.",
               "DashHook and a vehicle with working boost gauge are required for this feature." });
@@ -177,6 +180,44 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         }
         mbCtx.IntOption("Loud duration (ticks)", config->AntiLagSoundTicks, 0, 100, 1);
         mbCtx.FloatOptionCb("Volume", config->AntiLagSoundVolume, 0.0f, 2.0f, 0.05f, MenuUtils::GetKbFloat);
+        });
+
+    submenus.emplace_back("boostbygearmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
+        mbCtx.Title("Boost by gear");
+        CConfig* config = context.ActiveConfig();
+        mbCtx.Subtitle(config ? config->Name : "None");
+
+        if (config == nullptr) {
+            mbCtx.Option("No active configuration");
+            return;
+        }
+
+        mbCtx.BoolOption("Enable", config->BoostByGearEnable,
+            { "Enables boost by gear, which limits the boost level for each gear." });
+
+        int numGears = config->BoostByGear.rbegin()->first;
+        int oldNum = numGears;
+        if (mbCtx.IntOption("Number of gears", numGears, 1, 10, 1,
+            { "Number of gears for your map." })) {
+            // added so just increase the container size with the new gear and use the highest boost
+            if (numGears > oldNum) {
+                config->BoostByGear[numGears] = config->BoostByGear[oldNum];
+            }
+
+            // deleted so pop back?
+            if (numGears < oldNum) {
+                config->BoostByGear.erase(config->BoostByGear.find(oldNum));
+            }
+        }
+
+        for (int i = 1; i <= numGears; ++i) {
+            mbCtx.FloatOptionCb(
+                fmt::format("Gear {} boost", i),
+                config->BoostByGear[i],
+                0.0f, config->MaxBoost,
+                0.05f,
+                MenuUtils::GetKbFloat);
+        }
         });
 
     /* mainmenu -> developermenu */

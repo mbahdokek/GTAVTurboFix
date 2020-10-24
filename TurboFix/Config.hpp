@@ -2,6 +2,7 @@
 #include <inc/types.h>
 #include <string>
 #include <vector>
+#include <map>
 
 class CConfig {
 public:
@@ -34,6 +35,9 @@ public:
 
     // How many % of no boost after 1 second: 0.97f
     float UnspoolRate = 0.97f;
+
+    bool BoostByGearEnable;
+    std::map<int, float> BoostByGear;
 
     // AntiLag
     bool AntiLag = false;

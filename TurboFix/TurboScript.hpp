@@ -35,7 +35,7 @@ public:
 
 protected:
     void runEffects(Vehicle vehicle, uint32_t popCount, float currentThrottle);
-    float updateAntiLag(float currentBoost, float newBoost);
+    float updateAntiLag(float currentBoost, float newBoost, float limBoost);
     void updateDial(float newBoost);
     void updateTurbo();
 

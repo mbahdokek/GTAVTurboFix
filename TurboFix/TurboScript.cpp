@@ -120,7 +120,7 @@ float CTurboScript::GetCurrentBoost() {
     return 0.0f;
 }
 
-float CTurboScript::updateAntiLag(float currentBoost, float newBoost) {
+float CTurboScript::updateAntiLag(float currentBoost, float newBoost, float limBoost) {
     float currentThrottle = VExt::GetThrottleP(mVehicle);
     if (VExt::GetThrottleP(mVehicle) < 0.1f && VExt::GetCurrentRPM(mVehicle) > 0.6f) {
         // 4800 RPM = 80Hz
@@ -137,7 +137,7 @@ float CTurboScript::updateAntiLag(float currentBoost, float newBoost) {
             newBoost = alBoost;
             newBoost = std::clamp(newBoost,
                 mActiveConfig->MinBoost,
-                mActiveConfig->MaxBoost);
+                limBoost);
 
             mLastAntilagDelay = MISC::GET_GAME_TIMER();
             mPopCount++;
@@ -315,6 +315,7 @@ void CTurboScript::updateTurbo() {
 
     float newBoost = lerp(currentBoost, now, 1.0f - pow(1.0f - lerpRate, MISC::GET_FRAME_TIME()));
 
+    float limBoost = mActiveConfig->MaxBoost;
     if (!mActiveConfig->BoostByGearEnable || mActiveConfig->BoostByGear.empty()) {
         newBoost = std::clamp(newBoost,
             mActiveConfig->MinBoost,
@@ -335,10 +336,12 @@ void CTurboScript::updateTurbo() {
         newBoost = std::clamp(newBoost,
             mActiveConfig->MinBoost,
             mActiveConfig->BoostByGear[currentGear]);
+
+        limBoost = mActiveConfig->BoostByGear[currentGear];
     }
 
     if (mActiveConfig->AntiLag) {
-        newBoost = updateAntiLag(currentBoost, newBoost);
+        newBoost = updateAntiLag(currentBoost, newBoost, limBoost);
     }
 
     if (!mIsNPC)

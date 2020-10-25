@@ -234,7 +234,7 @@ void CTurboScript::runEffects(Vehicle vehicle, uint32_t popCount, float currentT
             auto randIndex = rand() % mSoundNames.size();
             soundName = mSoundNames[randIndex];
         }
-        else if (popCount < maxPopCount + rand() % maxPopCount && maxPopCount > 0) {
+        else if (maxPopCount > 0 && popCount < maxPopCount + rand() % maxPopCount) {
             explSz = 1.4f;
             soundName = soundNameBass;
         }

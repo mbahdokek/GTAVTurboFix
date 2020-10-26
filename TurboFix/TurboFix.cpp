@@ -16,7 +16,7 @@ float TF_GetNormalizedBoost() {
     auto* activeConfig = TurboFix::GetScript()->ActiveConfig();
     if (activeConfig) {
         return map(TurboFix::GetScript()->GetCurrentBoost(),
-            activeConfig->MinBoost, activeConfig->MaxBoost,
+            activeConfig->Turbo.MinBoost, activeConfig->Turbo.MaxBoost,
             -1.0f, 1.0f);
     }
     return 0.0f;
@@ -37,7 +37,7 @@ float TF_GetAbsoluteBoostMin() {
         return 0.0f;
     auto* activeConfig = TurboFix::GetScript()->ActiveConfig();
     if (activeConfig) {
-        return activeConfig->MinBoost;
+        return activeConfig->Turbo.MinBoost;
     }
     return 0.0f;
 }
@@ -47,7 +47,7 @@ float TF_GetAbsoluteBoostMax() {
         return 0.0f;
     auto* activeConfig = TurboFix::GetScript()->ActiveConfig();
     if (activeConfig) {
-        return activeConfig->MaxBoost;
+        return activeConfig->Turbo.MaxBoost;
     }
     return 0.0f;
 }

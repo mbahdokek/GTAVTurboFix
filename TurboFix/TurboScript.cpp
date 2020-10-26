@@ -127,16 +127,16 @@ float CTurboScript::updateAntiLag(float currentBoost, float newBoost, float limB
         //   -> 20 combustion strokes per cylinder per second
         //   -> 50ms between combusions per cylinder -> 10ms average?
         if (MISC::GET_GAME_TIMER() > static_cast<int>(mLastAntilagDelay) + rand() % 50 + 50) {
-            if (mActiveConfig->AntiLagEffects)
+            if (mActiveConfig->AntiLag.Effects)
                 runEffects(mVehicle, mPopCount, currentThrottle);
 
-            float boostAdd = mActiveConfig->MaxBoost - currentBoost;
+            float boostAdd = mActiveConfig->Turbo.MaxBoost - currentBoost;
             boostAdd = boostAdd * (static_cast<float>(rand() % 7 + 4) * 0.1f);
             float alBoost = currentBoost + boostAdd;
 
             newBoost = alBoost;
             newBoost = std::clamp(newBoost,
-                mActiveConfig->MinBoost,
+                mActiveConfig->Turbo.MinBoost,
                 limBoost);
 
             mLastAntilagDelay = MISC::GET_GAME_TIMER();
@@ -156,39 +156,39 @@ void CTurboScript::updateDial(float newBoost) {
         VehicleDashboardData dashData{};
         DashHook::GetData(&dashData);
 
-        if (mActiveConfig->DialBoostIncludesVacuum) {
+        if (mActiveConfig->Dial.BoostIncludesVacuum) {
             float boost;
             
             if (newBoost >= 0.0f) {
-                boost = map(newBoost, 0.0f, mActiveConfig->MaxBoost, 0.0f, 1.0f);
-                boost *= mActiveConfig->DialBoostScale;
+                boost = map(newBoost, 0.0f, mActiveConfig->Turbo.MaxBoost, 0.0f, 1.0f);
+                boost *= mActiveConfig->Dial.BoostScale;
             }
             else {
-                boost = map(newBoost, mActiveConfig->MinBoost, 0.0f, -1.0f, 0.0f);
-                boost *= mActiveConfig->DialVacuumScale;
+                boost = map(newBoost, mActiveConfig->Turbo.MinBoost, 0.0f, -1.0f, 0.0f);
+                boost *= mActiveConfig->Dial.VacuumScale;
             }
 
             // Attempt at smoothing boost/vacuum transition, but too much headache to get right.
             // float boostScale = map(newBoost,
-            //     mActiveConfig->MinBoost, -mActiveConfig->MinBoost,
+            //     mActiveConfig->Turbo.MinBoost, -mActiveConfig->Turbo.MinBoost,
             //     mActiveConfig->DialVacuumScale, mActiveConfig->DialBoostScale);
             // float minScale = std::min(mActiveConfig->DialVacuumScale, mActiveConfig->DialBoostScale);
             // float maxScale = std::max(mActiveConfig->DialVacuumScale, mActiveConfig->DialBoostScale);
             // boostScale = std::clamp(boostScale, minScale, maxScale);
             // boost *= boostScale;
 
-            boost += mActiveConfig->DialBoostOffset;
+            boost += mActiveConfig->Dial.BoostOffset;
             dashData.boost = boost;
         }
         else {
-            float boost = std::clamp(map(newBoost, 0.0f, mActiveConfig->MaxBoost, 0.0f, 1.0f), 0.0f, 1.0f);
-            boost *= mActiveConfig->DialBoostScale; // scale (0.0, 1.0)
-            boost += mActiveConfig->DialBoostOffset; // Add offset
+            float boost = std::clamp(map(newBoost, 0.0f, mActiveConfig->Turbo.MaxBoost, 0.0f, 1.0f), 0.0f, 1.0f);
+            boost *= mActiveConfig->Dial.BoostScale; // scale (0.0, 1.0)
+            boost += mActiveConfig->Dial.BoostOffset; // Add offset
             dashData.boost = boost;
 
-            float vacuum = std::clamp(map(newBoost, mActiveConfig->MinBoost, 0.0f, 0.0f, 1.0f), 0.0f, 1.0f);
-            vacuum *= mActiveConfig->DialVacuumScale; // scale (0.0, 1.0)
-            vacuum += mActiveConfig->DialVacuumOffset; // Add offset
+            float vacuum = std::clamp(map(newBoost, mActiveConfig->Turbo.MinBoost, 0.0f, 0.0f, 1.0f), 0.0f, 1.0f);
+            vacuum *= mActiveConfig->Dial.VacuumScale; // scale (0.0, 1.0)
+            vacuum += mActiveConfig->Dial.VacuumOffset; // Add offset
             dashData.vacuum = vacuum;
         }
 
@@ -197,14 +197,14 @@ void CTurboScript::updateDial(float newBoost) {
 }
 
 void CTurboScript::runEffects(Vehicle vehicle, uint32_t popCount, float currentThrottle) {
-    uint32_t maxPopCount = mActiveConfig->AntiLagSoundTicks;
+    uint32_t maxPopCount = mActiveConfig->AntiLag.Duration;
 
     Vector3 camPos = CAM::GET_FINAL_RENDERED_CAM_COORD();
     Vector3 camRot = CAM::GET_FINAL_RENDERED_CAM_ROT(0);
     Vector3 camDir = RotationToDirection(camRot);
 
     // UI::DrawSphere(camPos + camDir * 0.25f, 0.0625f, 255, 0, 0, 255);
-    mSoundEngine->setSoundVolume(mActiveConfig->AntiLagSoundVolume);
+    mSoundEngine->setSoundVolume(mActiveConfig->AntiLag.Volume);
     mSoundEngine->setListenerPosition(
         irrklang::vec3df( camPos.x, camPos.y, camPos.z ),
         irrklang::vec3df( camDir.x, camDir.y, camDir.z ),
@@ -243,13 +243,13 @@ void CTurboScript::runEffects(Vehicle vehicle, uint32_t popCount, float currentT
             soundName = std::string();
         }
 
-        if (mActiveConfig->AntiLagSoundSet != "NoSound") {
+        if (mActiveConfig->AntiLag.SoundSet != "NoSound") {
                 std::string soundFinalName =
                 fmt::format(R"({}\Sounds\{}\{})", Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
-                    Constants::ModDir, mActiveConfig->AntiLagSoundSet, soundName);
+                    Constants::ModDir, mActiveConfig->AntiLag.SoundSet, soundName);
             std::string soundBassFinalName =
                 fmt::format(R"({}\Sounds\{}\{})", Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
-                    Constants::ModDir, mActiveConfig->AntiLagSoundSet, soundNameBass);
+                    Constants::ModDir, mActiveConfig->AntiLag.SoundSet, soundNameBass);
 
             if (!soundName.empty())
                 mSoundEngine->play3D(soundFinalName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
@@ -273,7 +273,8 @@ void CTurboScript::updateTurbo() {
     if (!VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo) ||
         !VEHICLE::GET_IS_VEHICLE_ENGINE_RUNNING(mVehicle)) {
         float currentBoost = VExt::GetTurbo(mVehicle);
-        float newBoost = lerp(currentBoost, 0.0f, 1.0f - pow(1.0f - mActiveConfig->UnspoolRate, MISC::GET_FRAME_TIME()));
+        float newBoost = lerp(
+            currentBoost, 0.0f, 1.0f - pow(1.0f - mActiveConfig->Turbo.UnspoolRate, MISC::GET_FRAME_TIME()));
         if (!mIsNPC)
             updateDial(newBoost);
         VExt::SetTurbo(mVehicle, newBoost);
@@ -282,8 +283,8 @@ void CTurboScript::updateTurbo() {
 
     float currentBoost = VExt::GetTurbo(mVehicle);
     currentBoost = std::clamp(currentBoost,
-        mActiveConfig->MinBoost,
-        mActiveConfig->MaxBoost);
+        mActiveConfig->Turbo.MinBoost,
+        mActiveConfig->Turbo.MaxBoost);
 
     // No throttle:
     //   0.2 RPM -> NA
@@ -295,13 +296,13 @@ void CTurboScript::updateTurbo() {
 
     float boostClosed = map(VExt::GetCurrentRPM(mVehicle), 
         0.2f, 1.0f, 
-        0.0f, mActiveConfig->MinBoost);
-    boostClosed = std::clamp(boostClosed, mActiveConfig->MinBoost, 0.0f);
+        0.0f, mActiveConfig->Turbo.MinBoost);
+    boostClosed = std::clamp(boostClosed, mActiveConfig->Turbo.MinBoost, 0.0f);
 
     float boostWOT = map(VExt::GetCurrentRPM(mVehicle), 
-        mActiveConfig->RPMSpoolStart, mActiveConfig->RPMSpoolEnd,
-        0.0f, mActiveConfig->MaxBoost);
-    boostWOT = std::clamp(boostWOT, 0.0f, mActiveConfig->MaxBoost);
+        mActiveConfig->Turbo.RPMSpoolStart, mActiveConfig->Turbo.RPMSpoolEnd,
+        0.0f, mActiveConfig->Turbo.MaxBoost);
+    boostWOT = std::clamp(boostWOT, 0.0f, mActiveConfig->Turbo.MaxBoost);
 
     float now = map(abs(VExt::GetThrottle(mVehicle)), 
         0.0f, 1.0f, 
@@ -309,21 +310,21 @@ void CTurboScript::updateTurbo() {
 
     float lerpRate;
     if (now > currentBoost)
-        lerpRate = mActiveConfig->SpoolRate;
+        lerpRate = mActiveConfig->Turbo.SpoolRate;
     else
-        lerpRate = mActiveConfig->UnspoolRate;
+        lerpRate = mActiveConfig->Turbo.UnspoolRate;
 
     float newBoost = lerp(currentBoost, now, 1.0f - pow(1.0f - lerpRate, MISC::GET_FRAME_TIME()));
 
-    float limBoost = mActiveConfig->MaxBoost;
-    if (!mActiveConfig->BoostByGearEnable || mActiveConfig->BoostByGear.empty()) {
+    float limBoost = mActiveConfig->Turbo.MaxBoost;
+    if (!mActiveConfig->BoostByGear.Enable || mActiveConfig->BoostByGear.Gear.empty()) {
         newBoost = std::clamp(newBoost,
-            mActiveConfig->MinBoost,
-            mActiveConfig->MaxBoost);
+            mActiveConfig->Turbo.MinBoost,
+            mActiveConfig->Turbo.MaxBoost);
     }
     else {
         auto currentGear = VExt::GetGearCurr(mVehicle);
-        auto topBoostKvp = mActiveConfig->BoostByGear.rbegin();
+        auto topBoostKvp = mActiveConfig->BoostByGear.Gear.rbegin();
 
         // Use 1st gear boost limit for reverse.
         if (currentGear == 0)
@@ -334,13 +335,13 @@ void CTurboScript::updateTurbo() {
             currentGear = topBoostKvp->first;
 
         newBoost = std::clamp(newBoost,
-            mActiveConfig->MinBoost,
-            mActiveConfig->BoostByGear[currentGear]);
+            mActiveConfig->Turbo.MinBoost,
+            mActiveConfig->BoostByGear.Gear[currentGear]);
 
-        limBoost = mActiveConfig->BoostByGear[currentGear];
+        limBoost = mActiveConfig->BoostByGear.Gear[currentGear];
     }
 
-    if (mActiveConfig->AntiLag) {
+    if (mActiveConfig->AntiLag.Enable) {
         newBoost = updateAntiLag(currentBoost, newBoost, limBoost);
     }
 

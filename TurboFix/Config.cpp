@@ -8,12 +8,53 @@
 #include <fmt/format.h>
 #include <filesystem>
 
-
 #define CHECK_LOG_SI_ERROR(result, operation) \
     if ((result) < 0) { \
         logger.Write(ERROR, "[Config] %s Failed to %s, SI_Error [%d]", \
         __FUNCTION__, operation, result); \
     }
+
+#define SAVE_VAL(section, key, option) \
+    { \
+        SetValue(ini, section, key, option); \
+    }
+
+#define LOAD_VAL(section, key, option) \
+    { \
+        option = (GetValue(ini, section, key, option)); \
+    }
+
+void SetValue(CSimpleIniA & ini, const char* section, const char* key, int val) {
+    ini.SetLongValue(section, key, val);
+}
+
+void SetValue(CSimpleIniA & ini, const char* section, const char* key, const std::string & val) {
+    ini.SetValue(section, key, val.c_str());
+}
+
+void SetValue(CSimpleIniA & ini, const char* section, const char* key, bool val) {
+    ini.SetBoolValue(section, key, val);
+}
+
+void SetValue(CSimpleIniA & ini, const char* section, const char* key, float val) {
+    ini.SetDoubleValue(section, key, static_cast<double>(val));
+}
+
+int GetValue(CSimpleIniA & ini, const char* section, const char* key, int val) {
+    return ini.GetLongValue(section, key, val);
+}
+
+std::string GetValue(CSimpleIniA & ini, const char* section, const char* key, std::string val) {
+    return ini.GetValue(section, key, val.c_str());
+}
+
+bool GetValue(CSimpleIniA & ini, const char* section, const char* key, bool val) {
+    return ini.GetBoolValue(section, key, val);
+}
+
+float GetValue(CSimpleIniA & ini, const char* section, const char* key, float val) {
+    return static_cast<float>(ini.GetDoubleValue(section, key, val));
+}
 
 CConfig CConfig::Read(const std::string& configFile) {
     CConfig config{};
@@ -44,94 +85,47 @@ CConfig CConfig::Read(const std::string& configFile) {
 #pragma warning(push)
 #pragma warning(disable: 4244)
     // [Turbo]
-    config.RPMSpoolStart = ini.GetDoubleValue("Turbo", "RPMSpoolStart", config.RPMSpoolStart);
-    config.RPMSpoolEnd = ini.GetDoubleValue("Turbo", "RPMSpoolEnd", config.RPMSpoolEnd);
-    config.MinBoost = ini.GetDoubleValue("Turbo", "MinBoost", config.MinBoost);
-    config.MaxBoost = ini.GetDoubleValue("Turbo", "MaxBoost", config.MaxBoost);
-    config.SpoolRate = ini.GetDoubleValue("Turbo", "SpoolRate", config.SpoolRate);
-    config.UnspoolRate = ini.GetDoubleValue("Turbo", "UnspoolRate", config.UnspoolRate);
+    LOAD_VAL("Turbo", "RPMSpoolStart", config.Turbo.RPMSpoolStart);
+    LOAD_VAL("Turbo", "RPMSpoolEnd", config.Turbo.RPMSpoolEnd);
+    LOAD_VAL("Turbo", "MinBoost", config.Turbo.MinBoost);
+    LOAD_VAL("Turbo", "MaxBoost", config.Turbo.MaxBoost);
+    LOAD_VAL("Turbo", "SpoolRate", config.Turbo.SpoolRate);
+    LOAD_VAL("Turbo", "UnspoolRate", config.Turbo.UnspoolRate);
 
     // [BoostByGear]
-    config.BoostByGearEnable = ini.GetBoolValue("BoostByGear", "Enable", config.BoostByGearEnable);
-    config.BoostByGear.clear();
+    LOAD_VAL("BoostByGear", "Enable", config.BoostByGear.Enable);
+    config.BoostByGear.Gear.clear();
     for (int i = 1; i < 11; ++i) {
         double boost = ini.GetDoubleValue("BoostByGear", fmt::format("{}", i).c_str(), -2.0);
         if (boost < -1.0)
             break;
-        config.BoostByGear[i] = boost;
+        config.BoostByGear.Gear[i] = boost;
     }
 
     // [AntiLag]
-    config.AntiLag = ini.GetBoolValue("AntiLag", "AntiLag", config.AntiLag);
-    config.AntiLagEffects = ini.GetBoolValue("AntiLag", "Effects", config.AntiLagEffects);
-    config.AntiLagSoundSet = ini.GetValue("AntiLag", "SoundSet", config.AntiLagSoundSet.c_str());
-    config.AntiLagSoundTicks = ini.GetLongValue("AntiLag", "SoundFrequency", config.AntiLagSoundTicks);
-    config.AntiLagSoundVolume = ini.GetDoubleValue("AntiLag", "SoundVolume", config.AntiLagSoundVolume);
+    LOAD_VAL("AntiLag", "AntiLag", config.AntiLag.Enable);
+    LOAD_VAL("AntiLag", "Effects", config.AntiLag.Effects);
+    LOAD_VAL("AntiLag", "SoundSet", config.AntiLag.SoundSet);
+    LOAD_VAL("AntiLag", "SoundFrequency", config.AntiLag.Duration);
+    LOAD_VAL("AntiLag", "SoundVolume", config.AntiLag.Volume);
 
     // [Dial]
-    config.DialBoostOffset = ini.GetDoubleValue("Dial", "BoostOffset", config.DialBoostOffset);
-    config.DialBoostScale = ini.GetDoubleValue("Dial", "BoostScale", config.DialBoostScale);
-    config.DialVacuumOffset = ini.GetDoubleValue("Dial", "VacuumOffset", config.DialVacuumOffset);
-    config.DialVacuumScale = ini.GetDoubleValue("Dial", "VacuumScale", config.DialVacuumScale);
-    config.DialBoostIncludesVacuum = ini.GetBoolValue("Dial", "BoostIncludesVacuum", config.DialBoostIncludesVacuum);
+    LOAD_VAL("Dial", "BoostOffset", config.Dial.BoostOffset);
+    LOAD_VAL("Dial", "BoostScale", config.Dial.BoostScale);
+    LOAD_VAL("Dial", "VacuumOffset", config.Dial.VacuumOffset);
+    LOAD_VAL("Dial", "VacuumScale", config.Dial.VacuumScale);
+    LOAD_VAL("Dial", "BoostIncludesVacuum", config.Dial.BoostIncludesVacuum);
 #pragma warning(pop)
 
     return config;
 }
 
 void CConfig::Write() {
-    const std::string configsPath =
-        Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
-        Constants::ModDir +
-        "\\Configs";
-    const std::string configFile = fmt::format("{}\\{}.ini", configsPath, Name);
-
-    CSimpleIniA ini;
-    ini.SetUnicode();
-    SI_Error result = ini.LoadFile(configFile.c_str());
-    CHECK_LOG_SI_ERROR(result, "load");
-
-#pragma warning(push)
-#pragma warning(disable: 4244)
-    // [Turbo]
-    ini.SetDoubleValue("Turbo", "RPMSpoolStart", RPMSpoolStart);
-    ini.SetDoubleValue("Turbo", "RPMSpoolEnd", RPMSpoolEnd);
-    ini.SetDoubleValue("Turbo", "MinBoost", MinBoost);
-    ini.SetDoubleValue("Turbo", "MaxBoost", MaxBoost);
-    ini.SetDoubleValue("Turbo", "SpoolRate", SpoolRate);
-    ini.SetDoubleValue("Turbo", "UnspoolRate", UnspoolRate);
-
-    // [BoostByGear]
-    ini.SetBoolValue("BoostByGear", "Enable", BoostByGearEnable);
-    for (int i = 1; i <= 10; ++i) {
-        ini.DeleteValue("BoostByGear", fmt::format("{}", i).c_str(), nullptr);
-    }
-
-    for (const auto& p : BoostByGear) {
-        ini.SetDoubleValue("BoostByGear", fmt::format("{}", p.first).c_str(), p.second);
-    }
-
-    // [AntiLag]
-    ini.SetBoolValue("AntiLag", "AntiLag", AntiLag);
-    ini.SetBoolValue("AntiLag", "Effects", AntiLagEffects);
-    ini.SetValue("AntiLag", "SoundSet", AntiLagSoundSet.c_str());
-    ini.SetLongValue("AntiLag", "SoundFrequency", AntiLagSoundTicks);
-    ini.SetDoubleValue("AntiLag", "SoundVolume", AntiLagSoundVolume);
-
-    // [Dial]
-    ini.SetDoubleValue("Dial", "BoostOffset", DialBoostOffset);
-    ini.SetDoubleValue("Dial", "BoostScale", DialBoostScale);
-    ini.SetDoubleValue("Dial", "VacuumOffset", DialVacuumOffset);
-    ini.SetDoubleValue("Dial", "VacuumScale", DialVacuumScale);
-    ini.SetBoolValue("Dial", "BoostIncludesVacuum", DialBoostIncludesVacuum);
-#pragma warning(pop)
-
-
-    result = ini.SaveFile(configFile.c_str());
-    CHECK_LOG_SI_ERROR(result, "save");
+    Write({}, {});
 }
 
 bool CConfig::Write(const std::string& newName, const std::string& model) {
+    std::string name = newName.empty() ? Name : newName;
     const std::string configsPath =
         Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
         Constants::ModDir +
@@ -144,31 +138,42 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
     CHECK_LOG_SI_ERROR(result, "load");
 
     // [ID]
-    ini.SetValue("ID", "Models", model.c_str());
+    if (!model.empty())
+        ini.SetValue("ID", "Models", model.c_str());
 
 #pragma warning(push)
 #pragma warning(disable: 4244)
     // [Turbo]
-    ini.SetDoubleValue("Turbo", "RPMSpoolStart", RPMSpoolStart);
-    ini.SetDoubleValue("Turbo", "RPMSpoolEnd", RPMSpoolEnd);
-    ini.SetDoubleValue("Turbo", "MinBoost", MinBoost);
-    ini.SetDoubleValue("Turbo", "MaxBoost", MaxBoost);
-    ini.SetDoubleValue("Turbo", "SpoolRate", SpoolRate);
-    ini.SetDoubleValue("Turbo", "UnspoolRate", UnspoolRate);
+    SAVE_VAL("Turbo", "RPMSpoolStart", Turbo.RPMSpoolStart);
+    SAVE_VAL("Turbo", "RPMSpoolEnd", Turbo.RPMSpoolEnd);
+    SAVE_VAL("Turbo", "MinBoost", Turbo.MinBoost);
+    SAVE_VAL("Turbo", "MaxBoost", Turbo.MaxBoost);
+    SAVE_VAL("Turbo", "SpoolRate", Turbo.SpoolRate);
+    SAVE_VAL("Turbo", "UnspoolRate", Turbo.UnspoolRate);
+
+    // [BoostByGear]
+    SAVE_VAL("BoostByGear", "Enable", BoostByGear.Enable);
+    for (int i = 1; i <= 10; ++i) {
+        ini.DeleteValue("BoostByGear", fmt::format("{}", i).c_str(), nullptr);
+    }
+
+    for (const auto& p : BoostByGear.Gear) {
+        ini.SetDoubleValue("BoostByGear", fmt::format("{}", p.first).c_str(), p.second);
+    }
 
     // [AntiLag]
-    ini.SetBoolValue("AntiLag", "AntiLag", AntiLag);
-    ini.SetBoolValue("AntiLag", "Effects", AntiLagEffects);
-    ini.SetValue("AntiLag", "SoundSet", AntiLagSoundSet.c_str());
-    ini.SetLongValue("AntiLag", "SoundFrequency", AntiLagSoundTicks);
-    ini.SetDoubleValue("AntiLag", "SoundVolume", AntiLagSoundVolume);
+    SAVE_VAL("AntiLag", "AntiLag", AntiLag.Enable);
+    SAVE_VAL("AntiLag", "Effects", AntiLag.Effects);
+    SAVE_VAL("AntiLag", "SoundSet", AntiLag.SoundSet);
+    SAVE_VAL("AntiLag", "SoundFrequency", AntiLag.Duration);
+    SAVE_VAL("AntiLag", "SoundVolume", AntiLag.Volume);
 
     // [Dial]
-    ini.SetDoubleValue("Dial", "BoostOffset", DialBoostOffset);
-    ini.SetDoubleValue("Dial", "BoostScale", DialBoostScale);
-    ini.SetDoubleValue("Dial", "VacuumOffset", DialVacuumOffset);
-    ini.SetDoubleValue("Dial", "VacuumScale", DialVacuumScale);
-    ini.SetBoolValue("Dial", "BoostIncludesVacuum", DialBoostIncludesVacuum);
+    SAVE_VAL("Dial", "BoostOffset", Dial.BoostOffset);
+    SAVE_VAL("Dial", "BoostScale", Dial.BoostScale);
+    SAVE_VAL("Dial", "VacuumOffset", Dial.VacuumOffset);
+    SAVE_VAL("Dial", "VacuumScale", Dial.VacuumScale);
+    SAVE_VAL("Dial", "BoostIncludesVacuum", Dial.BoostIncludesVacuum);
 #pragma warning(pop)
 
     result = ini.SaveFile(configFile.c_str());

@@ -18,46 +18,56 @@ public:
     std::vector<std::string> ModelNames;
     std::vector<std::string> Plates;
 
-    // RPM where boost may build
-    float RPMSpoolStart = 0.2f;
+    // Turbo
+    struct {
+        // RPM where boost may build
+        float RPMSpoolStart = 0.2f;
 
-    // RPM where boost may be max
-    float RPMSpoolEnd = 0.5f;
+        // RPM where boost may be max
+        float RPMSpoolEnd = 0.5f;
 
-    // -1.0f, but -0.8f for pretty
-    float MinBoost = -0.8f;
+        // -1.0f, but -0.8f for pretty
+        float MinBoost = -0.8f;
 
-    // 1.0f max
-    float MaxBoost = 1.0f;
+        // 1.0f max
+        float MaxBoost = 1.0f;
 
-    // How many % of full boost after 1 second: 0.999f
-    float SpoolRate = 0.999f;
+        // How many % of full boost after 1 second: 0.999f
+        float SpoolRate = 0.999f;
 
-    // How many % of no boost after 1 second: 0.97f
-    float UnspoolRate = 0.97f;
+        // How many % of no boost after 1 second: 0.97f
+        float UnspoolRate = 0.97f;
+    } Turbo;
 
-    bool BoostByGearEnable;
-    std::map<int, float> BoostByGear;
+    // BoostByGear
+    struct {
+        bool Enable;
+        std::map<int, float> Gear;
+    } BoostByGear;
 
     // AntiLag
-    bool AntiLag = false;
+    struct {
+        bool Enable = false;
 
-    bool AntiLagEffects = true;
+        bool Effects = true;
 
-    // "Default", "NoSound" or some custom stuff
-    std::string AntiLagSoundSet = "Default";
+        // "Default", "NoSound" or some custom stuff
+        std::string SoundSet = "Default";
 
-    // Tick-based
-    int AntiLagSoundTicks = 12;
+        // Tick-based
+        int Duration = 12;
 
-    float AntiLagSoundVolume = 0.25f;
+        float Volume = 0.25f;
+    } AntiLag;
 
     // DashHook
-    float DialBoostOffset = 0.0f;
-    float DialBoostScale = 1.0f;
+    struct {
+        float BoostOffset = 0.0f;
+        float BoostScale = 1.0f;
 
-    float DialVacuumOffset = 0.0f;
-    float DialVacuumScale = 1.0f;
+        float VacuumOffset = 0.0f;
+        float VacuumScale = 1.0f;
 
-    bool DialBoostIncludesVacuum = false;
+        bool BoostIncludesVacuum = false;
+    } Dial;
 };

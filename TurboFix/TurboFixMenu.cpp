@@ -51,13 +51,13 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
                     fmt::format("Models: {}", fmt::join(config.ModelNames, ", ")),
                     fmt::format("Plates: {}", fmt::join(config.Plates, ", ")),
 
-                    fmt::format("RPM Spool Start: {:.2f}", config.RPMSpoolStart),
-                    fmt::format("RPM Spool End: {:.2f}", config.RPMSpoolEnd),
-                    fmt::format("Min boost: {:.2f}", config.MinBoost),
-                    fmt::format("Max boost: {:.2f}", config.MaxBoost),
-                    fmt::format("Spool rate: {:.5f}", config.SpoolRate),
-                    fmt::format("Unspool rate: {:.5f}", config.UnspoolRate),
-                    fmt::format("Anti-lag: {}", config.AntiLag),
+                    fmt::format("RPM Spool Start: {:.2f}", config.Turbo.RPMSpoolStart),
+                    fmt::format("RPM Spool End: {:.2f}", config.Turbo.RPMSpoolEnd),
+                    fmt::format("Min boost: {:.2f}", config.Turbo.MinBoost),
+                    fmt::format("Max boost: {:.2f}", config.Turbo.MaxBoost),
+                    fmt::format("Spool rate: {:.5f}", config.Turbo.SpoolRate),
+                    fmt::format("Unspool rate: {:.5f}", config.Turbo.UnspoolRate),
+                    fmt::format("Anti-lag: {}", config.AntiLag.Enable),
                 };
 
                 mbCtx.OptionPlusPlus(extras);
@@ -76,27 +76,27 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             return;
         }
 
-        mbCtx.FloatOptionCb("RPM Spool Start", config->RPMSpoolStart, 0.0f, 1.0f, 0.01f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("RPM Spool Start", config->Turbo.RPMSpoolStart, 0.0f, 1.0f, 0.01f, MenuUtils::GetKbFloat,
             { "At what RPM the turbo starts building boost.",
               "0.2 RPM is idle." });
 
-        mbCtx.FloatOptionCb("RPM Spool End", config->RPMSpoolEnd, 0.0f, 1.0f, 0.01f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("RPM Spool End", config->Turbo.RPMSpoolEnd, 0.0f, 1.0f, 0.01f, MenuUtils::GetKbFloat,
             { "At what RPM the turbo boost is maximal.",
               "1.0 RPM is rev limit." });
 
-        mbCtx.FloatOptionCb("Min boost", config->MinBoost, -1000000.0f, 0.0f, 0.01f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("Min boost", config->Turbo.MinBoost, -1000000.0f, 0.0f, 0.01f, MenuUtils::GetKbFloat,
             { "What the max vacuum is, e.g. when closing the throttle at high RPM.",
               "Keep this at a similar amplitude to max boost."});
 
-        mbCtx.FloatOptionCb("Max boost", config->MaxBoost, 0.0f, 1000000.0f, 0.01f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("Max boost", config->Turbo.MaxBoost, 0.0f, 1000000.0f, 0.01f, MenuUtils::GetKbFloat,
             { "What full boost is. A value of 1.0 adds 10% of the current engine power." });
 
-        mbCtx.FloatOptionCb("Spool rate", config->SpoolRate, 0.01f, 0.999999f, 0.00005f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("Spool rate", config->Turbo.SpoolRate, 0.01f, 0.999999f, 0.00005f, MenuUtils::GetKbFloat,
             { "How fast the turbo spools up, in part per 1 second.",
               "So 0.5 is it spools up to half its max after 1 second.",
               "0.999 is almost instant. Keep under 1.0." });
 
-        mbCtx.FloatOptionCb("Unspool rate", config->UnspoolRate, 0.01f, 0.999999f, 0.00005f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("Unspool rate", config->Turbo.UnspoolRate, 0.01f, 0.999999f, 0.00005f, MenuUtils::GetKbFloat,
             { "How fast the turbo slows down. Calculation is same as above." });
 
         mbCtx.MenuOption("Anti-lag settings", "antilagsettingsmenu",
@@ -146,19 +146,19 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             return;
         }
 
-        mbCtx.FloatOptionCb("Dial offset (boost)", config->DialBoostOffset, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("Dial offset (boost)", config->Dial.BoostOffset, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
             { "Starting offset of the boost dial. Press Enter to manually enter a number." });
 
-        mbCtx.FloatOptionCb("Dial scale (boost)", config->DialBoostScale, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("Dial scale (boost)", config->Dial.BoostScale, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
             { "Scaling of the boost dial. Press Enter to manually enter a number." });
 
-        mbCtx.FloatOptionCb("Dial offset (vacuum)", config->DialVacuumOffset, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("Dial offset (vacuum)", config->Dial.VacuumOffset, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
             { "Starting offset of the vacuum dial. Press Enter to manually enter a number." });
 
-        mbCtx.FloatOptionCb("Dial scale (vacuum)", config->DialVacuumScale, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
+        mbCtx.FloatOptionCb("Dial scale (vacuum)", config->Dial.VacuumScale, -10.0f, 10.0f, 0.05f, MenuUtils::GetKbFloat,
             { "Scaling of the vacuum dial. Press Enter to manually enter a number." });
 
-        mbCtx.BoolOption("Dial boost includes vacuum", config->DialBoostIncludesVacuum,
+        mbCtx.BoolOption("Dial boost includes vacuum", config->Dial.BoostIncludesVacuum,
             { "Remap vacuum data to the boost dial, for combined vacuum and boost dials. Vacuum offset is ignored." });
         });
 
@@ -173,13 +173,13 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             return;
         }
 
-        mbCtx.BoolOption("Enable", config->AntiLag);
-        mbCtx.BoolOption("Effects", config->AntiLagEffects, { "Exhaust pops, bangs and fire." });
+        mbCtx.BoolOption("Enable", config->AntiLag.Enable);
+        mbCtx.BoolOption("Effects", config->AntiLag.Effects, { "Exhaust pops, bangs and fire." });
         if (mbCtx.StringArray("Sound set", TurboFix::GetSoundSets(), context.SoundSetIndex())) {
-            config->AntiLagSoundSet = TurboFix::GetSoundSets()[context.SoundSetIndex()];
+            config->AntiLag.SoundSet = TurboFix::GetSoundSets()[context.SoundSetIndex()];
         }
-        mbCtx.IntOption("Loud duration (ticks)", config->AntiLagSoundTicks, 0, 100, 1);
-        mbCtx.FloatOptionCb("Volume", config->AntiLagSoundVolume, 0.0f, 2.0f, 0.05f, MenuUtils::GetKbFloat);
+        mbCtx.IntOption("Loud duration (ticks)", config->AntiLag.Duration, 0, 100, 1);
+        mbCtx.FloatOptionCb("Volume", config->AntiLag.Volume, 0.0f, 2.0f, 0.05f, MenuUtils::GetKbFloat);
         });
 
     submenus.emplace_back("boostbygearmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
@@ -192,29 +192,29 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             return;
         }
 
-        mbCtx.BoolOption("Enable", config->BoostByGearEnable,
+        mbCtx.BoolOption("Enable", config->BoostByGear.Enable,
             { "Enables boost by gear, which limits the boost level for each gear." });
 
-        int numGears = config->BoostByGear.rbegin()->first;
+        int numGears = config->BoostByGear.Gear.rbegin()->first;
         int oldNum = numGears;
         if (mbCtx.IntOption("Number of gears", numGears, 1, 10, 1,
             { "Number of gears for your map." })) {
             // added so just increase the container size with the new gear and use the highest boost
             if (numGears > oldNum) {
-                config->BoostByGear[numGears] = config->BoostByGear[oldNum];
+                config->BoostByGear.Gear[numGears] = config->BoostByGear.Gear[oldNum];
             }
 
             // deleted so pop back?
             if (numGears < oldNum) {
-                config->BoostByGear.erase(config->BoostByGear.find(oldNum));
+                config->BoostByGear.Gear.erase(config->BoostByGear.Gear.find(oldNum));
             }
         }
 
         for (int i = 1; i <= numGears; ++i) {
             mbCtx.FloatOptionCb(
                 fmt::format("Gear {} boost", i),
-                config->BoostByGear[i],
-                0.0f, config->MaxBoost,
+                config->BoostByGear.Gear[i],
+                0.0f, config->Turbo.MaxBoost,
                 0.05f,
                 MenuUtils::GetKbFloat);
         }

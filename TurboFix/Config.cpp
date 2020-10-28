@@ -127,11 +127,10 @@ CConfig CConfig::Read(const std::string& configFile) {
 }
 
 void CConfig::Write() {
-    Write({}, {});
+    Write(Name, std::string());
 }
 
 bool CConfig::Write(const std::string& newName, const std::string& model) {
-    std::string name = newName.empty() ? Name : newName;
     const std::string configsPath =
         Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
         Constants::ModDir +

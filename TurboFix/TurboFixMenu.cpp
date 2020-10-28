@@ -175,10 +175,14 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
 
         mbCtx.BoolOption("Enable", config->AntiLag.Enable);
         mbCtx.BoolOption("Effects", config->AntiLag.Effects, { "Exhaust pops, bangs and fire." });
+
+        mbCtx.IntOption("Period", config->AntiLag.PeriodMs, 1, 1000);
+        mbCtx.IntOption("Randomness", config->AntiLag.RandomMs, 1, 1000);
+        mbCtx.IntOption("Randomness loudness", config->AntiLag.RandomLoudIntervalMs, 1, 1000);
+
         if (mbCtx.StringArray("Sound set", TurboFix::GetSoundSets(), context.SoundSetIndex())) {
             config->AntiLag.SoundSet = TurboFix::GetSoundSets()[context.SoundSetIndex()];
         }
-        mbCtx.IntOption("Loud duration (ticks)", config->AntiLag.Duration, 0, 100, 1);
         mbCtx.FloatOptionCb("Volume", config->AntiLag.Volume, 0.0f, 2.0f, 0.05f, MenuUtils::GetKbFloat);
         });
 

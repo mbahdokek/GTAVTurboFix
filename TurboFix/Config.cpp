@@ -103,11 +103,13 @@ CConfig CConfig::Read(const std::string& configFile) {
     }
 
     // [AntiLag]
-    LOAD_VAL("AntiLag", "AntiLag", config.AntiLag.Enable);
+    LOAD_VAL("AntiLag", "Enable", config.AntiLag.Enable);
     LOAD_VAL("AntiLag", "Effects", config.AntiLag.Effects);
+    LOAD_VAL("AntiLag", "PeriodMs", config.AntiLag.PeriodMs);
+    LOAD_VAL("AntiLag", "RandomMs", config.AntiLag.RandomMs);
+    LOAD_VAL("AntiLag", "RandomLoudIntervalMs", config.AntiLag.RandomLoudIntervalMs);
     LOAD_VAL("AntiLag", "SoundSet", config.AntiLag.SoundSet);
-    LOAD_VAL("AntiLag", "SoundFrequency", config.AntiLag.Duration);
-    LOAD_VAL("AntiLag", "SoundVolume", config.AntiLag.Volume);
+    LOAD_VAL("AntiLag", "Volume", config.AntiLag.Volume);
 
     // [Dial]
     LOAD_VAL("Dial", "BoostOffset", config.Dial.BoostOffset);
@@ -162,11 +164,14 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
     }
 
     // [AntiLag]
-    SAVE_VAL("AntiLag", "AntiLag", AntiLag.Enable);
+    SAVE_VAL("AntiLag", "Enable", AntiLag.Enable);
     SAVE_VAL("AntiLag", "Effects", AntiLag.Effects);
+    SAVE_VAL("AntiLag", "PeriodMs", AntiLag.PeriodMs);
+    SAVE_VAL("AntiLag", "RandomMs", AntiLag.RandomMs);
+    SAVE_VAL("AntiLag", "RandomLoudIntervalMs", AntiLag.RandomLoudIntervalMs);
+
     SAVE_VAL("AntiLag", "SoundSet", AntiLag.SoundSet);
-    SAVE_VAL("AntiLag", "SoundFrequency", AntiLag.Duration);
-    SAVE_VAL("AntiLag", "SoundVolume", AntiLag.Volume);
+    SAVE_VAL("AntiLag", "Volume", AntiLag.Volume);
 
     // [Dial]
     SAVE_VAL("Dial", "BoostOffset", Dial.BoostOffset);

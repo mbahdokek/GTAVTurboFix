@@ -24,8 +24,7 @@ CTurboScript::CTurboScript(
     , mDefaultConfig(configs[0])
     , mVehicle(0)
     , mActiveConfig(nullptr)
-    , mLastAntilagDelay(0)
-    , mPopCount(0)
+    , mLastFxTime(0)
     , mLastThrottle(0)
     , mSoundSets(soundSets)
     , mSoundSetIndex(0)
@@ -122,29 +121,31 @@ float CTurboScript::GetCurrentBoost() {
 
 float CTurboScript::updateAntiLag(float currentBoost, float newBoost, float limBoost) {
     float currentThrottle = VExt::GetThrottleP(mVehicle);
-    if (VExt::GetThrottleP(mVehicle) < 0.1f && VExt::GetCurrentRPM(mVehicle) > 0.6f) {
-        // 4800 RPM = 80Hz
-        //   -> 20 combustion strokes per cylinder per second
-        //   -> 50ms between combusions per cylinder -> 10ms average?
-        if (MISC::GET_GAME_TIMER() > static_cast<int>(mLastAntilagDelay) + rand() % 50 + 50) {
-            if (mActiveConfig->AntiLag.Effects)
-                runEffects(mVehicle, mPopCount, currentThrottle);
-
-            float boostAdd = mActiveConfig->Turbo.MaxBoost - currentBoost;
-            boostAdd = boostAdd * (static_cast<float>(rand() % 7 + 4) * 0.1f);
-            float alBoost = currentBoost + boostAdd;
-
-            newBoost = alBoost;
-            newBoost = std::clamp(newBoost,
-                mActiveConfig->Turbo.MinBoost,
-                limBoost);
-
-            mLastAntilagDelay = MISC::GET_GAME_TIMER();
-            mPopCount++;
+    float alMinRPM = map(0.20f, 0.0f, 1.0f, mActiveConfig->Turbo.RPMSpoolStart, mActiveConfig->Turbo.RPMSpoolEnd);
+    if (VExt::GetThrottleP(mVehicle) < 0.1f && VExt::GetCurrentRPM(mVehicle) > alMinRPM) {
+        if (mActiveConfig->AntiLag.Effects) {
+            int delayMs = mLastFxTime + rand() % mActiveConfig->AntiLag.RandomMs + mActiveConfig->AntiLag.PeriodMs;
+            int gameTime = MISC::GET_GAME_TIMER();
+            if (gameTime > delayMs) {
+                bool loud = false;
+                // if lifted entirely within 200ms
+                if ((mLastThrottle - currentThrottle) / MISC::GET_FRAME_TIME() > 1000.0f / 200.0f ||
+                    rand() % 20 == 0 && gameTime > mLastLoudTime + mActiveConfig->AntiLag.RandomLoudIntervalMs) {
+                    loud = true;
+                    mLastLoudTime = gameTime;
+                }
+                runPtfx(mVehicle, loud);
+                runSfx(mVehicle, loud);
+                mLastFxTime = gameTime;
+            }
         }
-    }
-    else {
-        mPopCount = 0;
+
+        // TODO: Need to keep stable-ish Turbo RPM
+        float alBoost = std::clamp(currentBoost + abs(currentBoost - newBoost),
+                    mActiveConfig->Turbo.MinBoost,
+                    limBoost);
+
+        newBoost = alBoost;
     }
 
     mLastThrottle = currentThrottle;
@@ -196,9 +197,34 @@ void CTurboScript::updateDial(float newBoost) {
     }
 }
 
-void CTurboScript::runEffects(Vehicle vehicle, uint32_t popCount, float currentThrottle) {
-    uint32_t maxPopCount = mActiveConfig->AntiLag.Duration;
+void CTurboScript::runPtfx(Vehicle vehicle, bool loud) {
+    for (const auto& bone : mExhaustBones) {
+        int boneIdx = ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(vehicle, bone.c_str());
+        if (boneIdx == -1)
+            continue;
 
+        Vector3 bonePos = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(vehicle, boneIdx);
+        Vector3 boneOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle,
+            bonePos.x, bonePos.y, bonePos.z);
+
+        float explSz;
+        if (loud) {
+            explSz = 1.25f;
+        }
+        else {
+            explSz = map(VExt::GetCurrentRPM(mVehicle),
+                mActiveConfig->Turbo.RPMSpoolStart, mActiveConfig->Turbo.RPMSpoolEnd,
+                0.75f, 1.25f);
+            explSz = std::clamp(explSz, 0.75f, 1.25f);
+        }
+
+        GRAPHICS::USE_PARTICLE_FX_ASSET("core");
+        GRAPHICS::START_PARTICLE_FX_NON_LOOPED_ON_ENTITY("veh_backfire", vehicle,
+            boneOff.x, boneOff.y, boneOff.z, 0.0f, 0.0f, 0.0f, explSz, false, false, false);
+    }
+}
+
+void CTurboScript::runSfx(Vehicle vehicle, bool loud) {
     Vector3 camPos = CAM::GET_FINAL_RENDERED_CAM_COORD();
     Vector3 camRot = CAM::GET_FINAL_RENDERED_CAM_ROT(0);
     Vector3 camDir = RotationToDirection(camRot);
@@ -206,17 +232,11 @@ void CTurboScript::runEffects(Vehicle vehicle, uint32_t popCount, float currentT
     // UI::DrawSphere(camPos + camDir * 0.25f, 0.0625f, 255, 0, 0, 255);
     mSoundEngine->setSoundVolume(mActiveConfig->AntiLag.Volume);
     mSoundEngine->setListenerPosition(
-        irrklang::vec3df( camPos.x, camPos.y, camPos.z ),
-        irrklang::vec3df( camDir.x, camDir.y, camDir.z ),
-        irrklang::vec3df( 0, 0, 0 ),
-        irrklang::vec3df( 0, 0, -1 )
+        irrklang::vec3df(camPos.x, camPos.y, camPos.z),
+        irrklang::vec3df(camDir.x, camDir.y, camDir.z),
+        irrklang::vec3df(0, 0, 0),
+        irrklang::vec3df(0, 0, -1)
     );
-
-    bool loud = false;
-    // if lifted entirely within 200ms
-    if ((mLastThrottle - currentThrottle) / MISC::GET_FRAME_TIME() > 1000.0f / 200.0f) {
-        loud = true;
-    }
 
     for (const auto& bone : mExhaustBones) {
         int boneIdx = ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(vehicle, bone.c_str());
@@ -224,27 +244,20 @@ void CTurboScript::runEffects(Vehicle vehicle, uint32_t popCount, float currentT
             continue;
 
         Vector3 bonePos = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(vehicle, boneIdx);
-        float explSz;
         std::string soundName;
         const std::string soundNameBass = "EX_POP_SUB.wav";
         // UI::DrawSphere(bonePos, 0.125f, 0, 255, 0, 255);
 
         if (loud) {
-            explSz = 2.9f;
             auto randIndex = rand() % mSoundNames.size();
             soundName = mSoundNames[randIndex];
         }
-        else if (maxPopCount > 0 && popCount < maxPopCount + rand() % maxPopCount) {
-            explSz = 1.4f;
-            soundName = soundNameBass;
-        }
         else {
-            explSz = 0.9f;
-            soundName = std::string();
+            soundName = soundNameBass;
         }
 
         if (mActiveConfig->AntiLag.SoundSet != "NoSound") {
-                std::string soundFinalName =
+            std::string soundFinalName =
                 fmt::format(R"({}\Sounds\{}\{})", Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
                     Constants::ModDir, mActiveConfig->AntiLag.SoundSet, soundName);
             std::string soundBassFinalName =
@@ -256,16 +269,6 @@ void CTurboScript::runEffects(Vehicle vehicle, uint32_t popCount, float currentT
 
             mSoundEngine->play3D(soundBassFinalName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
         }
-
-        GRAPHICS::USE_PARTICLE_FX_ASSET("core");
-
-        Vector3 vehRot = ENTITY::GET_ENTITY_ROTATION(vehicle, 0);
-        auto createdPart = GRAPHICS::START_PARTICLE_FX_LOOPED_AT_COORD("veh_backfire",
-            bonePos.x, bonePos.y, bonePos.z,
-            vehRot.x, vehRot.y, vehRot.z,
-            explSz, false, false, false, false);
-
-        GRAPHICS::STOP_PARTICLE_FX_LOOPED(createdPart, 1);
     }
 }
 

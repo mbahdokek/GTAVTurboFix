@@ -34,7 +34,8 @@ public:
     }
 
 protected:
-    void runEffects(Vehicle vehicle, uint32_t popCount, float currentThrottle);
+    void runPtfx(Vehicle vehicle, bool loud);
+    void runSfx(Vehicle vehicle, bool loud);
     float updateAntiLag(float currentBoost, float newBoost, float limBoost);
     void updateDial(float newBoost);
     void updateTurbo();
@@ -46,8 +47,8 @@ protected:
     Vehicle mVehicle;
     CConfig* mActiveConfig;
 
-    uint32_t mLastAntilagDelay;
-    uint32_t mPopCount;
+    int mLastFxTime;
+    int mLastLoudTime;
 
     float mLastThrottle;
 

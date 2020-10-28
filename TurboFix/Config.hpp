@@ -49,14 +49,16 @@ public:
     struct {
         bool Enable = false;
 
+        // Ptfx and Sfx
         bool Effects = true;
+
+        // Delay = PeriodMs + rand() % RandomMs
+        int PeriodMs = 50;
+        int RandomMs = 150;
+        int RandomLoudIntervalMs = 500;
 
         // "Default", "NoSound" or some custom stuff
         std::string SoundSet = "Default";
-
-        // Tick-based
-        int Duration = 12;
-
         float Volume = 0.25f;
     } AntiLag;
 

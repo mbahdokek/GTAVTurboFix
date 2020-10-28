@@ -96,6 +96,10 @@ void CTurboScript::UpdateActiveConfig(bool playerCheck) {
     else {
         mActiveConfig = &*foundConfig;
     }
+
+    if (mActiveConfig->Turbo.ForceTurbo && !VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo)) {
+        VEHICLE::TOGGLE_VEHICLE_MOD(mVehicle, VehicleToggleModTurbo, true);
+    }
 }
 
 void CTurboScript::Tick() {

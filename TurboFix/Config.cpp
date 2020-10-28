@@ -85,6 +85,7 @@ CConfig CConfig::Read(const std::string& configFile) {
 #pragma warning(push)
 #pragma warning(disable: 4244)
     // [Turbo]
+    LOAD_VAL("Turbo", "ForceTurbo", config.Turbo.ForceTurbo);
     LOAD_VAL("Turbo", "RPMSpoolStart", config.Turbo.RPMSpoolStart);
     LOAD_VAL("Turbo", "RPMSpoolEnd", config.Turbo.RPMSpoolEnd);
     LOAD_VAL("Turbo", "MinBoost", config.Turbo.MinBoost);
@@ -146,6 +147,7 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
 #pragma warning(push)
 #pragma warning(disable: 4244)
     // [Turbo]
+    SAVE_VAL("Turbo", "ForceTurbo", Turbo.ForceTurbo);
     SAVE_VAL("Turbo", "RPMSpoolStart", Turbo.RPMSpoolStart);
     SAVE_VAL("Turbo", "RPMSpoolEnd", Turbo.RPMSpoolEnd);
     SAVE_VAL("Turbo", "MinBoost", Turbo.MinBoost);

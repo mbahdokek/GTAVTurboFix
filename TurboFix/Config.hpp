@@ -20,6 +20,9 @@ public:
 
     // Turbo
     struct {
+        // Force-install turbo if not installed yet, on loading.
+        bool ForceTurbo;
+
         // RPM where boost may build
         float RPMSpoolStart = 0.2f;
 

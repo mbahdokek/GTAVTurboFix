@@ -76,6 +76,9 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             return;
         }
 
+        mbCtx.BoolOption("Install turbo", config->Turbo.ForceTurbo,
+            { "Install the turbo automatically on the vehicle." });
+
         mbCtx.FloatOptionCb("RPM Spool Start", config->Turbo.RPMSpoolStart, 0.0f, 1.0f, 0.01f, MenuUtils::GetKbFloat,
             { "At what RPM the turbo starts building boost.",
               "0.2 RPM is idle." });

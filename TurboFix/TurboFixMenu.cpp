@@ -22,13 +22,13 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             Patches::BoostLimiter(TurboFix::GetSettings().Main.Enable);
         }
 
-        mbCtx.MenuOption("Configs", "configsmenu",
-            { "An overview of configurations available." });
-
         CConfig* activeConfig = context.ActiveConfig();
         mbCtx.MenuOption(fmt::format("Active config: {}", activeConfig ? activeConfig->Name : "None"),
             "editconfigmenu",
             { "Enter to edit the current configuration." });
+
+        mbCtx.MenuOption("Configs", "configsmenu",
+            { "An overview of configurations available." });
 
         mbCtx.MenuOption("Developer options", "developermenu");
         });

@@ -108,7 +108,10 @@ CConfig CConfig::Read(const std::string& configFile) {
     LOAD_VAL("AntiLag", "Effects", config.AntiLag.Effects);
     LOAD_VAL("AntiLag", "PeriodMs", config.AntiLag.PeriodMs);
     LOAD_VAL("AntiLag", "RandomMs", config.AntiLag.RandomMs);
-    LOAD_VAL("AntiLag", "RandomLoudIntervalMs", config.AntiLag.RandomLoudIntervalMs);
+
+    LOAD_VAL("AntiLag", "LoudOffThrottle", config.AntiLag.LoudOffThrottle);
+    LOAD_VAL("AntiLag", "LoudOffThrottleIntervalMs", config.AntiLag.LoudOffThrottleIntervalMs);
+
     LOAD_VAL("AntiLag", "SoundSet", config.AntiLag.SoundSet);
     LOAD_VAL("AntiLag", "Volume", config.AntiLag.Volume);
 
@@ -170,7 +173,9 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
     SAVE_VAL("AntiLag", "Effects", AntiLag.Effects);
     SAVE_VAL("AntiLag", "PeriodMs", AntiLag.PeriodMs);
     SAVE_VAL("AntiLag", "RandomMs", AntiLag.RandomMs);
-    SAVE_VAL("AntiLag", "RandomLoudIntervalMs", AntiLag.RandomLoudIntervalMs);
+
+    SAVE_VAL("AntiLag", "LoudOffThrottle", AntiLag.LoudOffThrottle);
+    SAVE_VAL("AntiLag", "LoudOffThrottleIntervalMs", AntiLag.LoudOffThrottleIntervalMs);
 
     SAVE_VAL("AntiLag", "SoundSet", AntiLag.SoundSet);
     SAVE_VAL("AntiLag", "Volume", AntiLag.Volume);

@@ -58,7 +58,9 @@ public:
         // Delay = PeriodMs + rand() % RandomMs
         int PeriodMs = 50;
         int RandomMs = 150;
-        int RandomLoudIntervalMs = 500;
+
+        bool LoudOffThrottle = false;
+        int LoudOffThrottleIntervalMs = 500;
 
         // "Default", "NoSound" or some custom stuff
         std::string SoundSet = "Default";

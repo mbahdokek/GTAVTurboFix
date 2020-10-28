@@ -176,12 +176,20 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             return;
         }
 
-        mbCtx.BoolOption("Enable", config->AntiLag.Enable);
-        mbCtx.BoolOption("Effects", config->AntiLag.Effects, { "Exhaust pops, bangs and fire." });
+        mbCtx.BoolOption("Enable", config->AntiLag.Enable, 
+            { "Keeps the turbo spooled up off-throttle." });
+        mbCtx.BoolOption("Effects", config->AntiLag.Effects, 
+            { "Exhaust pops, bangs and fire." });
 
-        mbCtx.IntOption("Period", config->AntiLag.PeriodMs, 1, 1000);
-        mbCtx.IntOption("Randomness", config->AntiLag.RandomMs, 1, 1000);
-        mbCtx.IntOption("Randomness loudness", config->AntiLag.RandomLoudIntervalMs, 1, 1000);
+        mbCtx.IntOption("Period", config->AntiLag.PeriodMs, 1, 1000, 5,
+            { "The minimum time between the effects playing, in milliseconds." });
+        mbCtx.IntOption("Randomness", config->AntiLag.RandomMs, 1, 1000, 5,
+            { "The random time range between the effects playing, in milliseconds." });
+
+        mbCtx.BoolOption("Off-throttle loud", config->AntiLag.LoudOffThrottle,
+            { "Continue the loud pops and bangs after initial throttle lift." });
+        mbCtx.IntOption("Off-throttle loud interval", config->AntiLag.LoudOffThrottleIntervalMs, 1, 1000, 5,
+            { "The minimum time between the off-throttle loud pops and bangs." });
 
         if (mbCtx.StringArray("Sound set", TurboFix::GetSoundSets(), context.SoundSetIndex())) {
             config->AntiLag.SoundSet = TurboFix::GetSoundSets()[context.SoundSetIndex()];

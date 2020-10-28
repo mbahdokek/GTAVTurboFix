@@ -132,9 +132,13 @@ float CTurboScript::updateAntiLag(float currentBoost, float newBoost, float limB
             int gameTime = MISC::GET_GAME_TIMER();
             if (gameTime > delayMs) {
                 bool loud = false;
+
+                int loudDelayMs = mLastLoudTime + rand() % mActiveConfig->AntiLag.RandomMs +
+                    mActiveConfig->AntiLag.LoudOffThrottleIntervalMs;
+
                 // if lifted entirely within 200ms
                 if ((mLastThrottle - currentThrottle) / MISC::GET_FRAME_TIME() > 1000.0f / 200.0f ||
-                    rand() % 20 == 0 && gameTime > mLastLoudTime + mActiveConfig->AntiLag.RandomLoudIntervalMs) {
+                    mActiveConfig->AntiLag.LoudOffThrottle && gameTime > loudDelayMs) {
                     loud = true;
                     mLastLoudTime = gameTime;
                 }
@@ -272,6 +276,9 @@ void CTurboScript::runSfx(Vehicle vehicle, bool loud) {
                 mSoundEngine->play3D(soundFinalName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
 
             mSoundEngine->play3D(soundBassFinalName.c_str(), { bonePos.x, bonePos.y, bonePos.z });
+
+            // Just play on one exhaust.
+            break;
         }
     }
 }

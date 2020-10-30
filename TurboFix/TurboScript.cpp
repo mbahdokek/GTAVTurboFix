@@ -148,8 +148,10 @@ float CTurboScript::updateAntiLag(float currentBoost, float newBoost, float limB
             }
         }
 
-        // TODO: Need to keep stable-ish Turbo RPM
-        float alBoost = std::clamp(currentBoost + abs(currentBoost - newBoost),
+        // currentBoost slightly decreases, so use a random mult with slight positive bias
+        float randMult = map(static_cast<float>(rand() % 101),
+            0.0f, 100.0f, 0.99f, 1.015f);
+        float alBoost = std::clamp(currentBoost * randMult,
                     mActiveConfig->Turbo.MinBoost,
                     limBoost);
 

@@ -139,8 +139,7 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
 
     CSimpleIniA ini;
     ini.SetUnicode();
-    SI_Error result = ini.LoadFile(configFile.c_str());
-    CHECK_LOG_SI_ERROR(result, "load");
+    SI_Error result;
 
     // [ID]
     if (!model.empty())

@@ -21,7 +21,7 @@ public:
     // Turbo
     struct {
         // Force-install turbo if not installed yet, on loading.
-        bool ForceTurbo;
+        bool ForceTurbo = false;
 
         // RPM where boost may build
         float RPMSpoolStart = 0.2f;
@@ -44,7 +44,7 @@ public:
 
     // BoostByGear
     struct {
-        bool Enable;
+        bool Enable = false;
         std::map<int, float> Gear;
     } BoostByGear;
 

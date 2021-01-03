@@ -202,6 +202,16 @@ uint32_t TurboFix::LoadConfigs() {
         configs.push_back(config);
         logger.Write(DEBUG, "Loaded vehicle config [%s]", config.Name.c_str());
     }
+
+    if (configs.empty() ||
+        !configs.empty() && configs[0].Name != "default") {
+        logger.Write(WARN, "No default config found, generating a default one and saving it...");
+        CConfig defaultConfig;
+        defaultConfig.Name = "default";
+        configs.insert(configs.begin(), defaultConfig);
+        defaultConfig.Write();
+    }
+
     logger.Write(INFO, "Configs loaded: %d", configs.size());
 
     TurboFix::UpdateActiveConfigs();

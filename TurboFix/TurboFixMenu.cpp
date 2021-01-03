@@ -53,13 +53,14 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
 
                     fmt::format("RPM Spool Start: {:.2f}", config.Turbo.RPMSpoolStart),
                     fmt::format("RPM Spool End: {:.2f}", config.Turbo.RPMSpoolEnd),
-                    fmt::format("Min boost: {:.2f}", config.Turbo.MinBoost),
                     fmt::format("Max boost: {:.2f}", config.Turbo.MaxBoost),
                     fmt::format("Spool rate: {:.5f}", config.Turbo.SpoolRate),
-                    fmt::format("Unspool rate: {:.5f}", config.Turbo.UnspoolRate),
-                    fmt::format("Anti-lag: {}", config.AntiLag.Enable),
+                    fmt::format("Anti-lag: {}",
+                        config.AntiLag.Enable ?
+                            fmt::format("Yes ({} effects)", config.AntiLag.Effects ? "with" : "without") :
+                            "No"
+                    )
                 };
-
                 mbCtx.OptionPlusPlus(extras);
             }
         }

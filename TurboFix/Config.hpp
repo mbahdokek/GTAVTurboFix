@@ -53,7 +53,7 @@ public:
         bool Enable = false;
 
         // Ptfx and Sfx
-        bool Effects = true;
+        bool Effects = false;
 
         // Delay = PeriodMs + rand() % RandomMs
         int PeriodMs = 50;

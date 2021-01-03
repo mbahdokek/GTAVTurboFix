@@ -76,8 +76,10 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             return;
         }
 
-        mbCtx.BoolOption("Install turbo", config->Turbo.ForceTurbo,
-            { "Install the turbo automatically on the vehicle." });
+        if (mbCtx.BoolOption("Install turbo", config->Turbo.ForceTurbo,
+            { "Automatically install the turbo upgrade on the vehicle, if it doesn't have one already." })) {
+            VEHICLE::TOGGLE_VEHICLE_MOD(context.GetVehicle(), VehicleToggleModTurbo, config->Turbo.ForceTurbo);
+        }
 
         mbCtx.FloatOptionCb("RPM Spool Start", config->Turbo.RPMSpoolStart, 0.0f, 1.0f, 0.01f, MenuUtils::GetKbFloat,
             { "At what RPM the turbo starts building boost.",

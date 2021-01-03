@@ -15,6 +15,7 @@
     <ProjectGuid>{1F02D8D8-3998-4171-9F9A-1FA979B0AFF9}</ProjectGuid>
     <RootNamespace>TurboFix</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>TurboFix</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

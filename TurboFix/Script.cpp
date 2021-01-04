@@ -183,7 +183,7 @@ uint32_t TurboFix::LoadConfigs() {
 
     for (const auto& file : fs::directory_iterator(configsPath)) {
         if (Util::to_lower(fs::path(file).extension().string()) != ".ini") {
-            logger.Write(DEBUG, "Skipping [%s] - not .ini", file.path().c_str());
+            logger.Write(DEBUG, "Skipping [%s] - not .ini", file.path().stem().string().c_str());
             continue;
         }
 
@@ -196,7 +196,7 @@ uint32_t TurboFix::LoadConfigs() {
         if (config.Models.empty() && config.Plates.empty()) {
             logger.Write(WARN,
                 "Vehicle settings file [%s] contained no model names or plates, ignoring it",
-                file.path().c_str());
+                file.path().stem().string().c_str());
             continue;
         }
         configs.push_back(config);

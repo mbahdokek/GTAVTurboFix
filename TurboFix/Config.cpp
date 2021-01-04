@@ -8,10 +8,10 @@
 #include <fmt/format.h>
 #include <filesystem>
 
-#define CHECK_LOG_SI_ERROR(result, operation) \
+#define CHECK_LOG_SI_ERROR(result, operation, file) \
     if ((result) < 0) { \
         logger.Write(ERROR, "[Config] %s Failed to %s, SI_Error [%d]", \
-        __FUNCTION__, operation, result); \
+        file, operation, result); \
     }
 
 #define SAVE_VAL(section, key, option) \
@@ -62,7 +62,7 @@ CConfig CConfig::Read(const std::string& configFile) {
     CSimpleIniA ini;
     ini.SetUnicode();
     SI_Error result = ini.LoadFile(configFile.c_str());
-    CHECK_LOG_SI_ERROR(result, "load");
+    CHECK_LOG_SI_ERROR(result, "load", configFile.c_str());
 
     config.Name = std::filesystem::path(configFile).stem().string();
 
@@ -139,11 +139,20 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
 
     CSimpleIniA ini;
     ini.SetUnicode();
-    SI_Error result;
+
+    // This here MAY fail on first save, in which case, it can be ignored.
+    // _Not_ having this just nukes the entire file, including any comments.
+    SI_Error result = ini.LoadFile(configFile.c_str());
+    if (result < 0) {
+        logger.Write(WARN, "[Config] %s Failed to load, SI_Error [%d]. (No problem if no file exists yet)", 
+            configFile.c_str(), result); 
+    }
 
     // [ID]
-    if (!model.empty())
+    if (!model.empty()) {
+        ModelNames.push_back(model);
         ini.SetValue("ID", "Models", model.c_str());
+    }
 
 #pragma warning(push)
 #pragma warning(disable: 4244)
@@ -187,7 +196,7 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
 #pragma warning(pop)
 
     result = ini.SaveFile(configFile.c_str());
-    CHECK_LOG_SI_ERROR(result, "save");
+    CHECK_LOG_SI_ERROR(result, "save", configFile.c_str());
     if (result < 0)
         return false;
     return true;

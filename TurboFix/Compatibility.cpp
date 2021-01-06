@@ -1,8 +1,8 @@
 #include "Compatibility.h"
+#include "Util/Logger.hpp"
+#include "Util/Paths.hpp"
 
 #include <Windows.h>
-
-#include "Util/Logger.hpp"
 
 namespace DashHook {
     HMODULE g_DashHookModule = nullptr;
@@ -25,7 +25,8 @@ T CheckAddr(HMODULE lib, const std::string& funcName)
 
 void setupDashHook() {
     logger.Write(INFO, "[Compat] Setting up DashHook");
-    DashHook::g_DashHookModule = LoadLibrary(L"DashHook.dll");
+    const std::string dashHookPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + "\\DashHook.dll";
+    DashHook::g_DashHookModule = LoadLibraryA(dashHookPath.c_str());
     if (!DashHook::g_DashHookModule) {
         logger.Write(INFO, "DashHook.dll not found");
         return;

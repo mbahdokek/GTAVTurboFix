@@ -124,6 +124,7 @@
     <ClInclude Include="Compatibility.h" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Constants.hpp" />
+    <ClInclude Include="SoundSet.hpp" />
     <ClInclude Include="Memory\NativeMemory.hpp" />
     <ClInclude Include="Memory\Offsets.hpp" />
     <ClInclude Include="Memory\Patcher.h" />

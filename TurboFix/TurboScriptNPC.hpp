@@ -7,7 +7,7 @@ public:
         Vehicle vehicle,
         CScriptSettings& settings,
         std::vector<CConfig>& configs,
-        std::vector<std::string>& soundSets
+        std::vector<SSoundSet>& soundSets
     );
 
     void Tick() override;

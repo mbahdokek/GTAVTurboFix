@@ -5,6 +5,7 @@
 #include "ScriptMenu.hpp"
 #include "Constants.hpp"
 #include "Compatibility.h"
+#include "SoundSet.hpp"
 
 #include "Memory/Patches.h"
 #include "Util/Logger.hpp"
@@ -17,6 +18,7 @@
 #include <memory>
 #include <filesystem>
 
+
 using namespace TurboFix;
 
 namespace {
@@ -25,7 +27,7 @@ namespace {
     std::vector<std::shared_ptr<CTurboScriptNPC>> npcScriptInsts;
 
     std::vector<CConfig> configs;
-    std::vector<std::string> soundSets;
+    std::vector<SSoundSet> soundSets;
 }
 
 void TurboFix::ScriptMain() {
@@ -159,7 +161,7 @@ const std::vector<CConfig>& TurboFix::GetConfigs() {
     return configs;
 }
 
-const std::vector<std::string>& TurboFix::GetSoundSets() {
+const std::vector<SSoundSet>& TurboFix::GetSoundSets() {
     return soundSets;
 }
 
@@ -242,22 +244,30 @@ uint32_t TurboFix::LoadSoundSets() {
             continue;
         }
 
-        if (!std::filesystem::exists(path / "EX_POP_0.wav") ||
-            !std::filesystem::exists(path / "EX_POP_1.wav") ||
-            !std::filesystem::exists(path / "EX_POP_2.wav") ||
-            !std::filesystem::exists(path / "EX_POP_SUB.wav")) {
-            logger.Write(WARN, "Skipping [%s] - missing a sound file.", path.stem().string().c_str());
+        if (!std::filesystem::exists(path / "EX_POP_SUB.wav")) {
+            logger.Write(WARN, "Skipping [%s] - missing a required sound file (EX_POP_SUB.wav).", path.stem().string().c_str());
             continue;
         }
 
-        soundSets.push_back(fs::path(dirEntry).stem().string());
-        logger.Write(DEBUG, "Added sound set [%s]", path.stem().string().c_str());
+        unsigned sfxCount = 0;
+        while (std::filesystem::exists(path / fmt::format("EX_POP_{}.wav", sfxCount))) {
+            ++sfxCount;
+        }
+
+        // Shouldn't really happen since there's a check for EX_POP_0.wav.
+        if (sfxCount == 0) {
+            logger.Write(WARN, "Skipping [%s] - No sound files found.", path.stem().string().c_str());
+            continue;
+        }
+
+        soundSets.push_back(SSoundSet{ fs::path(dirEntry).stem().string(), sfxCount });
+        logger.Write(DEBUG, "Added sound set [%s] with %d sounds", path.stem().string().c_str(), sfxCount);
     }
 
     logger.Write(DEBUG, "Added sound set [NoSound]");
-    soundSets.emplace_back("NoSound");
+    soundSets.push_back(SSoundSet{ "NoSound", 0 });
 
     logger.Write(INFO, "Sound sets loaded: %d", soundSets.size());
-
+    
     return static_cast<unsigned>(soundSets.size());
 }

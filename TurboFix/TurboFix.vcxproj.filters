@@ -165,6 +165,7 @@
       <Filter>Compatibility</Filter>
     </ClInclude>
     <ClInclude Include="TurboScriptNPC.hpp" />
+    <ClInclude Include="SoundSet.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\thirdparty\irrKlang\lib\Winx64-visualStudio\irrKlang.lib">

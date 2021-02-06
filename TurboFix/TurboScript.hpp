@@ -1,6 +1,7 @@
 #pragma once
 #include "ScriptSettings.hpp"
 #include "Config.hpp"
+#include "SoundSet.hpp"
 
 #include "Memory/VehicleExtensions.hpp"
 
@@ -13,7 +14,7 @@ public:
     CTurboScript(
         CScriptSettings& settings,
         std::vector<CConfig>& configs,
-        std::vector<std::string>& soundSets);
+        std::vector<SSoundSet>& soundSets);
     virtual ~CTurboScript();
     virtual void Tick();
 
@@ -52,11 +53,10 @@ protected:
 
     float mLastThrottle;
 
-    std::vector<std::string>& mSoundSets;
+    const std::vector<SSoundSet>& mSoundSets;
     int mSoundSetIndex;
 
     irrklang::ISoundEngine* mSoundEngine;
-    std::vector<std::string> mSoundNames;
     std::vector<std::string> mExhaustBones;
 
     bool mIsNPC;

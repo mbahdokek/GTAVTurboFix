@@ -179,9 +179,9 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             return;
         }
 
-        mbCtx.BoolOption("Enable", config->AntiLag.Enable, 
+        mbCtx.BoolOption("Enable", config->AntiLag.Enable,
             { "Keeps the turbo spooled up off-throttle." });
-        mbCtx.BoolOption("Effects", config->AntiLag.Effects, 
+        mbCtx.BoolOption("Effects", config->AntiLag.Effects,
             { "Exhaust pops, bangs and fire." });
 
         mbCtx.IntOption("Period", config->AntiLag.PeriodMs, 1, 1000, 5,
@@ -194,8 +194,12 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.IntOption("Off-throttle loud interval", config->AntiLag.LoudOffThrottleIntervalMs, 1, 1000, 5,
             { "The minimum time between the off-throttle loud pops and bangs." });
 
-        if (mbCtx.StringArray("Sound set", TurboFix::GetSoundSets(), context.SoundSetIndex())) {
-            config->AntiLag.SoundSet = TurboFix::GetSoundSets()[context.SoundSetIndex()];
+        std::vector<std::string> soundSetsStr;
+        for (const auto& soundset : TurboFix::GetSoundSets()) {
+            soundSetsStr.push_back(soundset.Name);
+        }
+        if (mbCtx.StringArray("Sound set", soundSetsStr, context.SoundSetIndex())) {
+            config->AntiLag.SoundSet = TurboFix::GetSoundSets()[context.SoundSetIndex()].Name;
         }
         mbCtx.FloatOptionCb("Volume", config->AntiLag.Volume, 0.0f, 2.0f, 0.05f, MenuUtils::GetKbFloat);
         });

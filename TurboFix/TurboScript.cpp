@@ -18,13 +18,14 @@ using VExt = VehicleExtensions;
 CTurboScript::CTurboScript(
     CScriptSettings& settings,
     std::vector<CConfig>& configs,
-    std::vector<std::string>& soundSets)
+    std::vector<SSoundSet>& soundSets)
     : mSettings(settings)
     , mConfigs(configs)
     , mDefaultConfig(configs[0])
     , mVehicle(0)
     , mActiveConfig(nullptr)
     , mLastFxTime(0)
+    , mLastLoudTime(0)
     , mLastThrottle(0)
     , mSoundSets(soundSets)
     , mSoundSetIndex(0)
@@ -33,12 +34,6 @@ CTurboScript::CTurboScript(
     mSoundEngine = irrklang::createIrrKlangDevice(irrklang::ESOD_DIRECT_SOUND_8);
     mSoundEngine->setDefault3DSoundMinDistance(7.5f);
     mSoundEngine->setSoundVolume(0.20f);
-
-    mSoundNames = {
-        "EX_POP_0.wav",
-        "EX_POP_1.wav",
-        "EX_POP_2.wav",
-    };
 
     mExhaustBones = {
         "exhaust",
@@ -259,15 +254,15 @@ void CTurboScript::runSfx(Vehicle vehicle, bool loud) {
         const std::string soundNameBass = "EX_POP_SUB.wav";
         // UI::DrawSphere(bonePos, 0.125f, 0, 255, 0, 255);
 
-        if (loud) {
-            auto randIndex = rand() % mSoundNames.size();
-            soundName = mSoundNames[randIndex];
-        }
-        else {
-            soundName = soundNameBass;
-        }
-
         if (mActiveConfig->AntiLag.SoundSet != "NoSound") {
+            if (loud) {
+                auto randIndex = rand() % mSoundSets[mSoundSetIndex].EffectCount;
+                soundName = fmt::format("EX_POP_{}.wav", randIndex);
+            }
+            else {
+                soundName = soundNameBass;
+            }
+
             std::string soundFinalName =
                 fmt::format(R"({}\Sounds\{}\{})", Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
                     Constants::ModDir, mActiveConfig->AntiLag.SoundSet, soundName);

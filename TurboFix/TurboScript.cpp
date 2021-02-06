@@ -209,7 +209,10 @@ void CTurboScript::runPtfx(Vehicle vehicle, bool loud) {
             continue;
 
         Vector3 bonePos = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(vehicle, boneIdx);
-        Vector3 boneRot = ENTITY::_GET_ENTITY_BONE_ROTATION_LOCAL(vehicle, boneIdx);
+        Vector3 boneRot{};
+        if (getGameVersion() >= 50) {
+            boneRot = ENTITY::_GET_ENTITY_BONE_ROTATION_LOCAL(vehicle, boneIdx);
+        }
         Vector3 boneOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle,
             bonePos.x, bonePos.y, bonePos.z);
 

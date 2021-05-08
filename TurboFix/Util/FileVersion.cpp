@@ -11,15 +11,6 @@
 
 namespace fs = std::filesystem;
 
-bool strfind(const std::string& strHaystack, const std::string& strNeedle) {
-    auto it = std::search(
-        strHaystack.begin(), strHaystack.end(),
-        strNeedle.begin(), strNeedle.end(),
-        [](char ch1, char ch2) { return tolower(ch1) == tolower(ch2); }
-    );
-    return (it != strHaystack.end());
-}
-
 bool operator==(const SVersion& a, const SVersion& b) {
     return a.Minor == b.Minor && a.Build == b.Build;
 }
@@ -31,31 +22,6 @@ bool operator<=(const SVersion& a, const SVersion& b) {
         if (a.Build <= b.Build)
             return true;
     return false;
-}
-
-bool isModulePresent(const std::string & name, std::string & modulePath) {
-    bool found = false;
-
-    HMODULE hMods[1024];
-    DWORD cbNeeded;
-    HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION |
-        PROCESS_VM_READ,
-        FALSE, GetCurrentProcessId());
-
-    if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
-        for (unsigned int i = 0; i < cbNeeded / sizeof(HMODULE); ++i) {
-            CHAR szModName[MAX_PATH];
-            if (GetModuleFileNameExA(hProcess, hMods[i], szModName, sizeof(szModName) / sizeof(TCHAR))) {
-                if (strfind(szModName, name)) {
-                    found = true;
-                    modulePath = szModName;
-                    break;
-                }
-            }
-        }
-    }
-    CloseHandle(hProcess);
-    return found;
 }
 
 SVersion getExeVersion(const std::string & exe) {
@@ -93,25 +59,22 @@ SVersion getExeVersion(const std::string & exe) {
 SVersion getExeInfo() {
     std::string currExe = Paths::GetRunningExecutablePath();
     logger.Write(INFO, "Running executable: %s", currExe.c_str());
-    std::string citizenDir;
-    bool fiveM = isModulePresent("CitizenGame.dll", citizenDir);
 
-    if (fiveM) {
+    HMODULE citizenGameHandle = GetModuleHandle(L"CitizenGame.dll");
+
+    if (citizenGameHandle != nullptr) {
         logger.Write(INFO, "FiveM detected");
-        auto FiveMApp = std::string(citizenDir).substr(0, std::string(citizenDir).find_last_of('\\'));
-        logger.Write(INFO, "FiveM.app dir: %s", FiveMApp.c_str());
-        auto cacheFolder = FiveMApp + "\\cache\\game";
-        std::string newestExe;
-        fs::directory_entry newestExeEntry;
-        for (auto& file : fs::directory_iterator(cacheFolder)) {
-            if (strfind(fs::path(file).string(), "GTA5.exe")) {
-                if (newestExe.empty() || last_write_time(newestExeEntry) < last_write_time(file)) {
-                    newestExe = fs::path(file).string();
-                    newestExeEntry = file;
-                }
-            }
+
+        FARPROC funcGetGameVersion = GetProcAddress(citizenGameHandle, "GetGameVersion");
+        if (!funcGetGameVersion) {
+            logger.Write(INFO, "No GetGameVersion in CitizenGame.dll, using default b1604");
+            return { 1604, 0 };
         }
-        currExe = newestExe;
+
+        int(*GetGameVersion)() = reinterpret_cast<int(*)()>(funcGetGameVersion);
+        return { GetGameVersion(), 0 };
     }
-    return getExeVersion(currExe);
+    else {
+        return getExeVersion(currExe);
+    }
 }

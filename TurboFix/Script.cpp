@@ -25,12 +25,27 @@ namespace {
     std::shared_ptr<CScriptSettings> settings;
     std::shared_ptr<CTurboScript> playerScriptInst;
     std::vector<std::shared_ptr<CTurboScriptNPC>> npcScriptInsts;
+    std::unique_ptr<CScriptMenu<CTurboScript>> scriptMenu;
 
     std::vector<CConfig> configs;
     std::vector<SSoundSet> soundSets;
+
+    bool initialized = false;
 }
 
 void TurboFix::ScriptMain() {
+    if (!initialized) {
+        logger.Write(INFO, "Script started");
+        ScriptInit();
+        initialized = true;
+    }
+    else {
+        logger.Write(INFO, "Script restarted");
+    }
+    ScriptTick();
+}
+
+void TurboFix::ScriptInit() {
     const std::string settingsGeneralPath =
         Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
         Constants::ModDir +
@@ -60,7 +75,7 @@ void TurboFix::ScriptMain() {
     VehicleExtensions::Init();
     Compatibility::Setup();
 
-    CScriptMenu menu(settingsMenuPath, 
+    scriptMenu = std::make_unique<CScriptMenu<CTurboScript>>(settingsMenuPath,
         []() {
             // OnInit
             settings->Load();
@@ -73,10 +88,12 @@ void TurboFix::ScriptMain() {
         },
         BuildMenu()
     );
+}
 
-    while(true) {
+void TurboFix::ScriptTick() {
+    while (true) {
         playerScriptInst->Tick();
-        menu.Tick(*playerScriptInst);
+        scriptMenu->Tick(*playerScriptInst);
         UpdateNPC();
         UpdatePatch();
         WAIT(0);

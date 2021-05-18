@@ -4,6 +4,8 @@
 
 namespace TurboFix {
     void ScriptMain();
+    void ScriptInit();
+    void ScriptTick();
     void UpdateNPC();
     void UpdateActiveConfigs();
     void UpdatePatch();

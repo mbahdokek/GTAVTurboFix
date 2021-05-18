@@ -121,7 +121,7 @@ float CTurboScript::GetCurrentBoost() {
 float CTurboScript::updateAntiLag(float currentBoost, float newBoost, float limBoost) {
     float currentThrottle = VExt::GetThrottleP(mVehicle);
     float alMinRPM = map(0.20f, 0.0f, 1.0f, mActiveConfig->Turbo.RPMSpoolStart, mActiveConfig->Turbo.RPMSpoolEnd);
-    if (VExt::GetThrottleP(mVehicle) < 0.1f && VExt::GetCurrentRPM(mVehicle) > alMinRPM) {
+    if (abs(VExt::GetThrottleP(mVehicle)) < 0.1f && VExt::GetCurrentRPM(mVehicle) > alMinRPM) {
         if (mActiveConfig->AntiLag.Effects) {
             int delayMs = mLastFxTime + rand() % mActiveConfig->AntiLag.RandomMs + mActiveConfig->AntiLag.PeriodMs;
             int gameTime = MISC::GET_GAME_TIMER();
@@ -145,7 +145,7 @@ float CTurboScript::updateAntiLag(float currentBoost, float newBoost, float limB
 
         // currentBoost slightly decreases, so use a random mult with slight positive bias
         float randMult = map(static_cast<float>(rand() % 101),
-            0.0f, 100.0f, 0.99f, 1.015f);
+            0.0f, 100.0f, 0.995f, 1.025f);
         float alBoost = std::clamp(currentBoost * randMult,
                     mActiveConfig->Turbo.MinBoost,
                     limBoost);

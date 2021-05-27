@@ -105,6 +105,8 @@ CConfig CConfig::Read(const std::string& configFile) {
 
     // [AntiLag]
     LOAD_VAL("AntiLag", "Enable", config.AntiLag.Enable);
+    LOAD_VAL("AntiLag", "MinRPM", config.AntiLag.MinRPM);
+
     LOAD_VAL("AntiLag", "Effects", config.AntiLag.Effects);
     LOAD_VAL("AntiLag", "PeriodMs", config.AntiLag.PeriodMs);
     LOAD_VAL("AntiLag", "RandomMs", config.AntiLag.RandomMs);
@@ -177,6 +179,8 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
 
     // [AntiLag]
     SAVE_VAL("AntiLag", "Enable", AntiLag.Enable);
+    SAVE_VAL("AntiLag", "MinRPM", AntiLag.MinRPM);
+
     SAVE_VAL("AntiLag", "Effects", AntiLag.Effects);
     SAVE_VAL("AntiLag", "PeriodMs", AntiLag.PeriodMs);
     SAVE_VAL("AntiLag", "RandomMs", AntiLag.RandomMs);

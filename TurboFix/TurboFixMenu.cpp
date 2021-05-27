@@ -181,6 +181,9 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
 
         mbCtx.BoolOption("Enable", config->AntiLag.Enable,
             { "Keeps the turbo spooled up off-throttle." });
+        mbCtx.FloatOption("Min RPM", config->AntiLag.MinRPM, 0.2f, 1.0f, 0.05f,
+            { "Minimum RPM where anti-lag is active." });
+
         mbCtx.BoolOption("Effects", config->AntiLag.Effects,
             { "Exhaust pops, bangs and fire." });
 

@@ -120,8 +120,7 @@ float CTurboScript::GetCurrentBoost() {
 
 float CTurboScript::updateAntiLag(float currentBoost, float newBoost, float limBoost) {
     float currentThrottle = VExt::GetThrottleP(mVehicle);
-    float alMinRPM = map(0.20f, 0.0f, 1.0f, mActiveConfig->Turbo.RPMSpoolStart, mActiveConfig->Turbo.RPMSpoolEnd);
-    if (abs(VExt::GetThrottleP(mVehicle)) < 0.1f && VExt::GetCurrentRPM(mVehicle) > alMinRPM) {
+    if (abs(VExt::GetThrottleP(mVehicle)) < 0.1f && VExt::GetCurrentRPM(mVehicle) > mActiveConfig->AntiLag.MinRPM) {
         if (mActiveConfig->AntiLag.Effects) {
             int delayMs = mLastFxTime + rand() % mActiveConfig->AntiLag.RandomMs + mActiveConfig->AntiLag.PeriodMs;
             int gameTime = MISC::GET_GAME_TIMER();

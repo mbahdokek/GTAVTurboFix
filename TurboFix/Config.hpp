@@ -51,7 +51,7 @@ public:
     // AntiLag
     struct {
         bool Enable = false;
-        float MinRPM = 0.75f;
+        float MinRPM = 0.65f;
 
         // Ptfx and Sfx
         bool Effects = false;

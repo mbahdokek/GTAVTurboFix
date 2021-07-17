@@ -9,7 +9,7 @@ public:
     void Save();
 
     struct {
-        bool Enable = true;
+
     } Main;
 
     struct {

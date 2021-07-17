@@ -8,7 +8,6 @@ namespace TurboFix {
     void ScriptTick();
     void UpdateNPC();
     void UpdateActiveConfigs();
-    void UpdatePatch();
     std::vector<CScriptMenu<CTurboScript>::CSubmenu> BuildMenu();
 
     CScriptSettings& GetSettings();

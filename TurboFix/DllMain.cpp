@@ -99,7 +99,7 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
             const uint8_t expected = 1;
             uint8_t actual = 0;
 
-            if (Patches::BoostLimiter(false))
+            if (Patches::PatchBoostLimiter(false))
                 actual++;
 
             if (actual == expected) {

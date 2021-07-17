@@ -107,7 +107,7 @@ void CTurboScript::Tick() {
         UpdateActiveConfig(true);
     }
 
-    if (mActiveConfig && Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false) && mSettings.Main.Enable) {
+    if (mActiveConfig && Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false)) {
         updateTurbo();
     }
 }

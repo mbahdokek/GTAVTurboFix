@@ -20,7 +20,7 @@ bool Patches::Test() {
     return success;
 }
 
-bool Patches::BoostLimiter(bool enable) {
+bool Patches::PatchBoostLimiter(bool enable) {
     if (Error)
         return false;
 

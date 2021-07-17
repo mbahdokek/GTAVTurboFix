@@ -69,7 +69,7 @@ void TurboFix::ScriptInit() {
         Patches::Error = true;
     }
     else {
-        Patches::BoostLimiter(settings->Main.Enable);
+        Patches::PatchBoostLimiter(true);
     }
 
     VehicleExtensions::Init();
@@ -95,7 +95,6 @@ void TurboFix::ScriptTick() {
         playerScriptInst->Tick();
         scriptMenu->Tick(*playerScriptInst);
         UpdateNPC();
-        UpdatePatch();
         WAIT(0);
     }
 }
@@ -148,17 +147,6 @@ void TurboFix::UpdateActiveConfigs() {
 
     for (const auto& inst : npcScriptInsts) {
         inst->UpdateActiveConfig(false);
-    }
-}
-
-void TurboFix::UpdatePatch() {
-    if (settings->Main.Enable &&
-        (playerScriptInst->ActiveConfig() != nullptr ||
-        !npcScriptInsts.empty())) {
-        Patches::BoostLimiter(true);
-    }
-    else {
-        Patches::BoostLimiter(false);
     }
 }
 

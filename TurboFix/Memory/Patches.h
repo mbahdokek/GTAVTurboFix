@@ -3,6 +3,6 @@ namespace Patches {
     void SetPatterns();
     bool Test();
 
-    bool BoostLimiter(bool enable);
+    bool PatchBoostLimiter(bool enable);
     extern bool Error;
 }

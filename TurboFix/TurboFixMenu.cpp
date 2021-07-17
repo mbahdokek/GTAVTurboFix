@@ -17,9 +17,6 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.Title("Turbo Fix");
         mbCtx.Subtitle(std::string("~b~") + Constants::DisplayVersion);
 
-        if (mbCtx.BoolOption("Enable", TurboFix::GetSettings().Main.Enable,
-            { "Enable or disable the entire script." })) {
-            Patches::BoostLimiter(TurboFix::GetSettings().Main.Enable);
         }
 
         CConfig* activeConfig = context.ActiveConfig();

@@ -7,7 +7,7 @@ bool TF_Active() {
     if (!TurboFix::GetScript())
         return false;
     auto* activeConfig = TurboFix::GetScript()->ActiveConfig();
-    return activeConfig && TurboFix::GetSettings().Main.Enable;
+    return activeConfig;
 }
 
 float TF_GetNormalizedBoost() {

@@ -6,6 +6,7 @@
 #include "Util/Paths.hpp"
 #include "Util/Game.hpp"
 #include "Util/UI.hpp"
+#include "Util/String.hpp"
 
 #include <inc/enums.h>
 #include <inc/natives.h>
@@ -69,17 +70,17 @@ void CTurboScript::UpdateActiveConfig(bool playerCheck) {
     std::string plate = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(mVehicle);
 
     // First pass - match model and plate
-    auto foundConfig = std::find_if(mConfigs.begin(), mConfigs.end(), [&](const auto& config) {
-        bool modelMatch = std::find(config.Models.begin(), config.Models.end(), model) != config.Models.end();
-        bool plateMatch = std::find(config.Plates.begin(), config.Plates.end(), plate) != config.Plates.end();
+    auto foundConfig = std::find_if(mConfigs.begin(), mConfigs.end(), [&](const CConfig& config) {
+        bool modelMatch = config.ModelHash == model;
+        bool plateMatch = Util::strcmpwi(config.Plate, plate);
         return modelMatch && plateMatch;
     });
 
     // second pass - match model with any plate
     if (foundConfig == mConfigs.end()) {
-        foundConfig = std::find_if(mConfigs.begin(), mConfigs.end(), [&](const auto& config) {
-            bool modelMatch = std::find(config.Models.begin(), config.Models.end(), model) != config.Models.end();
-            bool plateMatch = config.Plates.empty();
+        foundConfig = std::find_if(mConfigs.begin(), mConfigs.end(), [&](const CConfig& config) {
+            bool modelMatch = config.ModelHash == model;
+            bool plateMatch = config.Plate.empty();
             return modelMatch && plateMatch;
         });
     }

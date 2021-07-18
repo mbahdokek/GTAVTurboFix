@@ -1,23 +1,33 @@
-This folder contains different configurations. Whenever you save a
-configuration with the in-game menu it updates or makes a new file here.
+;This folder contains different configurations. Whenever you save a
+;configuration with the in-game menu it updates or makes a new file here.
 
-Following is an example ini with descriptions of what the options do.
-Lines starting with a ; are comments and are ignored, so you can use it
-as a template for your own configurations.
+;Following is an example ini with descriptions of what the options do.
+;Lines starting with a ; are comments and are ignored, so you can use it
+;as a template for your own configurations.
 
--------------------------------------------------------------------------------
+;Tip: Use Notepad++ and set language to "INI file" for syntax highlighting.
+
+;------------------------------------------------------------------------------
 ; Save as <name>.ini, for example "Big Turbo.ini".
 
 ; ID section for the script to determine what cars to use this for.
 [ID]
-; The car models this config applies for.
-Models = sultan kuruma
-; The plates this config applies for. Model+Plate match overrides first
-; model match.
-Plates =
+
+; The car model this config applies for.
+ModelName = sultan2
+
+; The hash of the model - used by the script if it can't figure out the name.
+ModelHash = 3404691C
+
+; The plate this config applies for.
+; Model+Plate match has higher priority than just model match.
+Plate = BRRT
 
 ; Turbo section for the turbo behavior.
 [Turbo]
+
+; Automatically install the turbo upgrade for cars matching this config.
+ForceTurbo = true
 
 ; At what RPM the turbo starts spooling up.
 ; 0.2 RPM is idle.
@@ -30,7 +40,8 @@ RPMSpoolEnd = 0.5
 ; What the idle boost/vacuum is.
 MinBoost = -0.8
 
-; What full boost is.
+; What full boost is. 1.0 adds 10% to engine power when spooled up,
+; 10.0 doubles engine power.
 MaxBoost = 1.0
 
 ; How fast the turbo spools up, in part per 1 second.

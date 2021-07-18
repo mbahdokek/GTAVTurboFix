@@ -321,8 +321,8 @@ std::vector<std::string> TurboFix::FormatTurboConfig(CTurboScript& context, cons
 
     std::vector<std::string> extras{
         fmt::format("Name: {}", config.Name),
-        fmt::format("Models: {}", fmt::join(config.ModelNames, ", ")),
-        config.Plates.empty() ? "Plates: None" : fmt::format("Plates: {}", fmt::join(config.Plates, ", ")),
+        fmt::format("Model: {}", config.ModelName),
+        fmt::format("Plate: {}", config.Plate.empty() ? "None" : fmt::format("[{}]", config.Plate)),
         "",
         fmt::format("RPM Spool Start: {:.2f}", config.Turbo.RPMSpoolStart),
         fmt::format("RPM Spool End: {:.2f}", config.Turbo.RPMSpoolEnd),

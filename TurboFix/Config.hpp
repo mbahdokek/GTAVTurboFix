@@ -11,12 +11,15 @@ public:
     void Write();
     bool Write(const std::string& newName, Hash model, std::string plate);
 
-    std::string Name;
-    std::vector<Hash> Models;
+    // 2.1.0 config or earlier
+    // Contains "Models" and not "ModelHashes"/"ModelNames"
+    bool Legacy;
 
-    // just used for menu overview
-    std::vector<std::string> ModelNames;
-    std::vector<std::string> Plates;
+    std::string Name;
+
+    Hash ModelHash;
+    std::string ModelName;
+    std::string Plate;
 
     // Turbo
     struct {

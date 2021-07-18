@@ -69,18 +69,63 @@ CConfig CConfig::Read(const std::string& configFile) {
 
     // [ID]
     std::string modelNamesAll = ini.GetValue("ID", "Models", "");
-    std::vector<std::string> modelNames = Util::split(modelNamesAll, ' ');
 
-    for (const auto& modelName : modelNames) {
-        config.Models.push_back(Util::joaat(modelName.c_str()));
-        config.ModelNames.push_back(modelName);
+    std::string modelHashStr = ini.GetValue("ID", "ModelHash", "");
+    std::string modelName = ini.GetValue("ID", "ModelName", "");
+
+    if (!modelNamesAll.empty() && modelHashStr.empty() && modelName.empty()) {
+        config.Legacy = true;
+    }
+
+    if (config.Legacy) {
+        std::vector<std::string> modelNames = Util::split(modelNamesAll, ' ');
+
+        for (const auto& modelNameLegacy : modelNames) {
+            config.ModelHash = Util::joaat(modelNameLegacy.c_str());
+            config.ModelName = modelNameLegacy;
+            // Only bother with the first one
+            break;
+        }
+    }
+    else {
+        if (modelHashStr.empty() && modelName.empty()) {
+            // This is a no-vehicle config. Nothing to be done.
+        }
+        else if (modelHashStr.empty()) {
+            // This config only has a model name.
+            config.ModelHash = Util::joaat(modelName.c_str());
+            config.ModelName = modelName;
+        }
+        else {
+            // This config only has a hash.
+            Hash modelHash = 0;
+            int found = sscanf_s(modelHashStr.c_str(), "%X", &modelHash);
+
+            if (found == 1) {
+                config.ModelHash = modelHash;
+
+                auto& asCache = ASCache::Get();
+                auto it = asCache.find(modelHash);
+                std::string modelName = it == asCache.end() ? std::string() : it->second;
+                config.ModelName = modelName;
+            }
+        }
     }
 
     std::string platesAll = ini.GetValue("ID", "Plates", "");
-    std::vector<std::string> plates = Util::split(platesAll, ' ');
+    std::string plate = ini.GetValue("ID", "Plate", "");
 
-    for (const auto& plate : plates) {
-        config.Plates.push_back(plate);
+    if (!platesAll.empty() && plate.empty()) {
+        std::vector<std::string> plates = Util::split(platesAll, ' ');
+
+        for (const auto& plate : plates) {
+            config.Plate = plate;
+            // Only bother with the first one
+            break;
+        }
+    }
+    else {
+        config.Plate = plate;
     }
 
 #pragma warning(push)
@@ -153,21 +198,22 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate) {
 
     // [ID]
     if (model != 0) {
-        Models.push_back(model);
-        ini.SetValue("ID", "ModelHashes", fmt::format("{:X}", model).c_str());
+        ModelHash = model;
+    }
 
-        auto& asCache = ASCache::Get();
-        auto it = asCache.find(model);
-        std::string modelName = it == asCache.end() ? std::string() : it->second;
-        if (!modelName.empty()) {
-            ModelNames.push_back(modelName);
-            ini.SetValue("ID", "Models", modelName.c_str());
-        }
+    ini.SetValue("ID", "ModelHash", fmt::format("{:X}", ModelHash).c_str());
+
+    auto& asCache = ASCache::Get();
+    auto it = asCache.find(ModelHash);
+    std::string modelName = it == asCache.end() ? std::string() : it->second;
+    if (!modelName.empty()) {
+        ModelName = modelName;
+        ini.SetValue("ID", "ModelName", modelName.c_str());
     }
 
     if (!plate.empty()) {
-        Plates.push_back(plate);
-        ini.SetValue("ID", "Plates", plate.c_str());
+        Plate = plate;
+        ini.SetValue("ID", "Plate", plate.c_str());
     }
 
 #pragma warning(push)

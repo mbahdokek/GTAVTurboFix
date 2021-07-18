@@ -200,12 +200,6 @@ uint32_t TurboFix::LoadConfigs() {
             continue;
         }
 
-        if (config.ModelHash == 0 && config.ModelName.empty() && config.Plate.empty()) {
-            logger.Write(WARN,
-                "Vehicle settings file [%s] contained no model names or plates, ignoring it",
-                file.path().stem().string().c_str());
-            continue;
-        }
         configs.push_back(config);
         logger.Write(DEBUG, "Loaded vehicle config [%s]", config.Name.c_str());
     }

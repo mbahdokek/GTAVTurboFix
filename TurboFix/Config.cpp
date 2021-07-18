@@ -1,5 +1,6 @@
 #include "Config.hpp"
 #include "Constants.hpp"
+#include "Util/AddonSpawnerCache.hpp"
 #include "Util/Paths.hpp"
 #include "Util/Logger.hpp"
 #include "Util/String.hpp"
@@ -129,10 +130,10 @@ CConfig CConfig::Read(const std::string& configFile) {
 }
 
 void CConfig::Write() {
-    Write(Name, std::string());
+    Write(Name, 0, std::string());
 }
 
-bool CConfig::Write(const std::string& newName, const std::string& model) {
+bool CConfig::Write(const std::string& newName, Hash model, std::string plate) {
     const std::string configsPath =
         Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
         Constants::ModDir +
@@ -151,9 +152,22 @@ bool CConfig::Write(const std::string& newName, const std::string& model) {
     }
 
     // [ID]
-    if (!model.empty()) {
-        ModelNames.push_back(model);
-        ini.SetValue("ID", "Models", model.c_str());
+    if (model != 0) {
+        Models.push_back(model);
+        ini.SetValue("ID", "ModelHashes", fmt::format("{:X}", model).c_str());
+
+        auto& asCache = ASCache::Get();
+        auto it = asCache.find(model);
+        std::string modelName = it == asCache.end() ? std::string() : it->second;
+        if (!modelName.empty()) {
+            ModelNames.push_back(modelName);
+            ini.SetValue("ID", "Models", modelName.c_str());
+        }
+    }
+
+    if (!plate.empty()) {
+        Plates.push_back(plate);
+        ini.SetValue("ID", "Plates", plate.c_str());
     }
 
 #pragma warning(push)

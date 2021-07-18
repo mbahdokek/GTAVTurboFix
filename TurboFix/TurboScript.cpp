@@ -97,6 +97,39 @@ void CTurboScript::UpdateActiveConfig(bool playerCheck) {
     }
 }
 
+void CTurboScript::ApplyConfig(const CConfig& config) {
+    if (!mActiveConfig)
+        return;
+
+    mActiveConfig->Turbo.ForceTurbo = config.Turbo.ForceTurbo;
+    mActiveConfig->Turbo.RPMSpoolStart = config.Turbo.RPMSpoolStart;
+    mActiveConfig->Turbo.RPMSpoolEnd = config.Turbo.RPMSpoolEnd;
+    mActiveConfig->Turbo.MinBoost = config.Turbo.MinBoost;
+    mActiveConfig->Turbo.MaxBoost = config.Turbo.MaxBoost;
+    mActiveConfig->Turbo.SpoolRate = config.Turbo.SpoolRate;
+    mActiveConfig->Turbo.UnspoolRate = config.Turbo.UnspoolRate;
+
+    mActiveConfig->BoostByGear.Enable = config.BoostByGear.Enable;
+    mActiveConfig->BoostByGear.Gear = config.BoostByGear.Gear;
+
+    mActiveConfig->AntiLag.Enable = config.AntiLag.Enable;
+    mActiveConfig->AntiLag.MinRPM = config.AntiLag.MinRPM;
+    mActiveConfig->AntiLag.Effects = config.AntiLag.Effects;
+    mActiveConfig->AntiLag.PeriodMs = config.AntiLag.PeriodMs;
+    mActiveConfig->AntiLag.RandomMs = config.AntiLag.RandomMs;
+
+    mActiveConfig->AntiLag.LoudOffThrottle = config.AntiLag.LoudOffThrottle;
+    mActiveConfig->AntiLag.LoudOffThrottleIntervalMs = config.AntiLag.LoudOffThrottleIntervalMs;
+    mActiveConfig->AntiLag.SoundSet = config.AntiLag.SoundSet;
+    mActiveConfig->AntiLag.Volume = config.AntiLag.Volume;
+
+    mActiveConfig->Dial.BoostOffset = config.Dial.BoostOffset;
+    mActiveConfig->Dial.BoostScale = config.Dial.BoostScale;
+    mActiveConfig->Dial.VacuumOffset = config.Dial.VacuumOffset;
+    mActiveConfig->Dial.VacuumScale = config.Dial.VacuumScale;
+    mActiveConfig->Dial.BoostIncludesVacuum = config.Dial.BoostIncludesVacuum;
+}
+
 void CTurboScript::Tick() {
     Vehicle playerVehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::PLAYER_PED_ID(), false);
 
@@ -110,6 +143,10 @@ void CTurboScript::Tick() {
     if (mActiveConfig && Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false)) {
         updateTurbo();
     }
+}
+
+bool CTurboScript::GetHasTurbo() {
+    return VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo);
 }
 
 float CTurboScript::GetCurrentBoost() {
@@ -143,8 +180,9 @@ float CTurboScript::updateAntiLag(float currentBoost, float newBoost, float limB
         }
 
         // currentBoost slightly decreases, so use a random mult with slight positive bias
+        // TODO: Needs to be framerate-insensitive
         float randMult = map(static_cast<float>(rand() % 101),
-            0.0f, 100.0f, 0.990f, 1.015f);
+            0.0f, 100.0f, 0.990f, 1.025f);
         float alBoost = std::clamp(currentBoost * randMult,
                     mActiveConfig->Turbo.MinBoost,
                     limBoost);

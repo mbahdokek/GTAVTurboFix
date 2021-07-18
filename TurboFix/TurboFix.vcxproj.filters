@@ -60,6 +60,9 @@
       <Filter>Compatibility</Filter>
     </ClCompile>
     <ClCompile Include="TurboScriptNPC.cpp" />
+    <ClCompile Include="Util\AddonSpawnerCache.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Util">
@@ -166,6 +169,9 @@
     </ClInclude>
     <ClInclude Include="TurboScriptNPC.hpp" />
     <ClInclude Include="SoundSet.hpp" />
+    <ClInclude Include="Util\AddonSpawnerCache.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\thirdparty\irrKlang\lib\Winx64-visualStudio\irrKlang.lib">

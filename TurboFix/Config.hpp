@@ -9,7 +9,7 @@ public:
     CConfig() = default;
     static CConfig Read(const std::string& configFile);
     void Write();
-    bool Write(const std::string& newName, const std::string& model);
+    bool Write(const std::string& newName, Hash model, std::string plate);
 
     std::string Name;
     std::vector<Hash> Models;

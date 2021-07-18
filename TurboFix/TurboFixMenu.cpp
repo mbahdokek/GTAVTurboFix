@@ -7,61 +7,66 @@
 #include "ScriptMenuUtils.h"
 
 #include "Util/UI.hpp"
+#include "Util/Math.hpp"
 
 #include <fmt/format.h>
+
+namespace TurboFix {
+    std::vector<std::string> FormatTurboConfig(CTurboScript& context, const CConfig& config);
+    bool PromptSave(CTurboScript& context, CConfig& config, Hash model, std::string plate);
+}
 
 std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
     std::vector<CScriptMenu<CTurboScript>::CSubmenu> submenus;
     /* mainmenu */
     submenus.emplace_back("mainmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
-        mbCtx.Title("Turbo Fix");
+        mbCtx.Title("TurboFix");
         mbCtx.Subtitle(std::string("~b~") + Constants::DisplayVersion);
 
+        Ped playerPed = PLAYER::PLAYER_PED_ID();
+        Vehicle playerVehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
+
+        if (!playerVehicle || !ENTITY::DOES_ENTITY_EXIST(playerVehicle)) {
+            mbCtx.Option("No vehicle", { "Get in a vehicle to change its gear stats." });
+            mbCtx.MenuOption("Developer options", "developermenu");
+            return;
         }
 
+        // activeConfig can always be assumed if in any vehicle.
         CConfig* activeConfig = context.ActiveConfig();
-        mbCtx.MenuOption(fmt::format("Active config: {}", activeConfig ? activeConfig->Name : "None"),
-            "editconfigmenu",
+        float currentBoost = context.GetCurrentBoost();
+        float currentBoostPercent =
+            map(currentBoost,
+                activeConfig->Turbo.MinBoost, activeConfig->Turbo.MaxBoost,
+                -100.0f, 100.0f);
+
+        std::string turboExtraTitle;
+        std::vector<std::string> extra;
+        if (!context.GetHasTurbo()) {
+            turboExtraTitle = "N/A";
+            extra = { "No turbo installed." };
+        }
+        else {
+            turboExtraTitle = activeConfig->Name;
+            extra = FormatTurboConfig(context, *activeConfig);
+            extra.push_back(fmt::format("Current boost: {:.2f} ({:.0f}%)", currentBoost, currentBoostPercent));
+        }
+
+        mbCtx.OptionPlus("Turbo info", extra, nullptr, nullptr, nullptr, turboExtraTitle);
+
+        mbCtx.MenuOption("Edit configuration", "editconfigmenu",
             { "Enter to edit the current configuration." });
 
-        mbCtx.MenuOption("Configs", "configsmenu",
-            { "An overview of configurations available." });
-
-        mbCtx.MenuOption("Developer options", "developermenu");
-        });
-
-    /* mainmenu -> configsmenu */
-    submenus.emplace_back("configsmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
-        mbCtx.Title("Configs");
-        mbCtx.Subtitle("Overview");
-
-        if (mbCtx.Option("Reload configs")) {
+        if (mbCtx.MenuOption("Load configuration", "loadmenu", 
+            { "Load another configuration into the current config." })) {
             TurboFix::LoadConfigs();
         }
 
-        for (const auto& config : TurboFix::GetConfigs()) {
-            bool selected;
-            mbCtx.OptionPlus(config.Name, {}, &selected);
+        mbCtx.MenuOption("Save configuration", "savemenu",
+            { "Save the current configuration to disk." });
 
-            if (selected) {
-                std::vector<std::string> extras{
-                    fmt::format("Models: {}", fmt::join(config.ModelNames, ", ")),
-                    fmt::format("Plates: {}", fmt::join(config.Plates, ", ")),
-
-                    fmt::format("RPM Spool Start: {:.2f}", config.Turbo.RPMSpoolStart),
-                    fmt::format("RPM Spool End: {:.2f}", config.Turbo.RPMSpoolEnd),
-                    fmt::format("Max boost: {:.2f}", config.Turbo.MaxBoost),
-                    fmt::format("Spool rate: {:.5f}", config.Turbo.SpoolRate),
-                    fmt::format("Anti-lag: {}",
-                        config.AntiLag.Enable ?
-                            fmt::format("Yes ({} effects)", config.AntiLag.Effects ? "with" : "without") :
-                            "No"
-                    )
-                };
-                mbCtx.OptionPlusPlus(extras);
-            }
-        }
-        });
+        mbCtx.MenuOption("Developer options", "developermenu");
+    });
 
     /* mainmenu -> editconfigmenu */
     submenus.emplace_back("editconfigmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
@@ -111,32 +116,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.MenuOption("Dial settings", "dialsettingsmenu", 
             { "Remap the turbo dial on vehicle dashboards.",
               "DashHook and a vehicle with working boost gauge are required for this feature." });
-
-        if (mbCtx.Option("Save changes")) {
-            config->Write();
-            UI::Notify("Saved changes", true);
-            TurboFix::LoadConfigs();
-        }
-
-        if (mbCtx.Option("Save as...")) {
-            UI::Notify("Enter new config name.", true);
-            std::string newName = UI::GetKeyboardResult();
-
-            UI::Notify("Enter model(s).", true);
-            std::string newModel = UI::GetKeyboardResult();
-
-            if (newName.empty() || newModel.empty()) {
-                UI::Notify("No config name or model name entered. Not saving anything.", true);
-                return;
-            }
-
-            if (config->Write(newName, newModel))
-                UI::Notify("Saved as new configuration", true);
-            else
-                UI::Notify("Failed to save as new configuration", true);
-            TurboFix::LoadConfigs();
-        }
-        });
+    });
 
     /* mainmenu -> editconfigmenu -> dialsettingsmenu */
     submenus.emplace_back("dialsettingsmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
@@ -163,7 +143,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
 
         mbCtx.BoolOption("Dial boost includes vacuum", config->Dial.BoostIncludesVacuum,
             { "Remap vacuum data to the boost dial, for combined vacuum and boost dials. Vacuum offset is ignored." });
-        });
+    });
 
     /* mainmenu -> editconfigmenu -> antilagsettingsmenu */
     submenus.emplace_back("antilagsettingsmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
@@ -202,8 +182,9 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             config->AntiLag.SoundSet = TurboFix::GetSoundSets()[context.SoundSetIndex()].Name;
         }
         mbCtx.FloatOptionCb("Volume", config->AntiLag.Volume, 0.0f, 2.0f, 0.05f, MenuUtils::GetKbFloat);
-        });
+    });
 
+    /* mainmenu -> editconfigmenu -> boostbygearmenu */
     submenus.emplace_back("boostbygearmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
         mbCtx.Title("Boost by gear");
         CConfig* config = context.ActiveConfig();
@@ -240,16 +221,137 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
                 0.05f,
                 MenuUtils::GetKbFloat);
         }
-        });
+    });
+
+    /* mainmenu -> loadmenu */
+    submenus.emplace_back("loadmenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
+        mbCtx.Title("Load configurations");
+
+        CConfig* config = context.ActiveConfig();
+        mbCtx.Subtitle(fmt::format("Current: ",config ? config->Name : "None"));
+
+        if (config == nullptr) {
+            mbCtx.Option("No active configuration");
+            return;
+        }
+
+        if (TurboFix::GetConfigs().empty()) {
+            mbCtx.Option("No saved ratios");
+        }
+
+        for (const auto& config : TurboFix::GetConfigs()) {
+            bool selected;
+            bool triggered = mbCtx.OptionPlus(config.Name, {}, &selected);
+
+            if (selected) {
+                mbCtx.OptionPlusPlus(FormatTurboConfig(context, config));
+            }
+
+            if (triggered) {
+                context.ApplyConfig(config);
+                UI::Notify(fmt::format("Applied config {}.", config.Name), true);
+            }
+        }
+    });
+
+    /* mainmenu -> savemenu */
+    submenus.emplace_back("savemenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
+        mbCtx.Title("Save configuration");
+        mbCtx.Subtitle("");
+        auto* config = context.ActiveConfig();
+
+        if (config == nullptr) {
+            mbCtx.Option("No active configuration");
+            return;
+        }
+
+        Hash model = ENTITY::GET_ENTITY_MODEL(PED::GET_VEHICLE_PED_IS_IN(PLAYER::PLAYER_PED_ID(), false));
+        const char* plate = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(PED::GET_VEHICLE_PED_IS_IN(PLAYER::PLAYER_PED_ID(), false));
+
+        if (mbCtx.Option("Save",
+            { "Save the current configuration to the current active configuration.",
+              fmt::format("Current active configuration: {}.", context.ActiveConfig()->Name) })) {
+            config->Write();
+            TurboFix::LoadConfigs();
+            UI::Notify("Saved changes", true);
+        }
+
+        if (mbCtx.Option("Save as specific vehicle",
+            { "Save current turbo configuration for the current vehicle model and license plate.",
+               "Automatically loads for vehicles of this model with this license plate." })) {
+            if (PromptSave(context, *config, model, plate))
+                TurboFix::LoadConfigs();
+        }
+
+        if (mbCtx.Option("Save as generic vehicle",
+            { "Save current turbo configuration for the current vehicle model."
+                "Automatically loads for any vehicle of this model.",
+                "Overridden by license plate config, if present." })) {
+            if (PromptSave(context, *config, model, std::string()))
+                TurboFix::LoadConfigs();
+        }
+
+        if (mbCtx.Option("Save as generic",
+            { "Save current turbo configuration, but don't make it automatically load for any vehicle." })) {
+            if (PromptSave(context, *config, 0, std::string()))
+                TurboFix::LoadConfigs();
+        }
+    });
 
     /* mainmenu -> developermenu */
     submenus.emplace_back("developermenu", [](NativeMenu::Menu& mbCtx, CTurboScript& context) {
         mbCtx.Title("Developer options");
         mbCtx.Subtitle("");
 
-        mbCtx.Option(fmt::format("NPC instances: {}", TurboFix::GetNPCScriptCount()));
+        mbCtx.Option(fmt::format("NPC instances: {}", TurboFix::GetNPCScriptCount()),
+            { "TurboFix works for all NPC vehicles with the turbo upgrade installed.",
+              "This is the number of vehicles the script is working for." });
         mbCtx.BoolOption("NPC Details", TurboFix::GetSettings().Debug.NPCDetails);
-        });
+    });
 
     return submenus;
+}
+
+std::vector<std::string> TurboFix::FormatTurboConfig(CTurboScript& context, const CConfig& config) {
+    // https://itstillruns.com/horsepower-vs-boost-pressure-10009983.html
+    // a turbo will increase horsepower by about 7 percent per pound of boost over a naturally aspirated configuration
+    // 1.0 boost = +10% torque, so 1.0 boost = 1 psi?
+    //  (approx {:.1f} bar/{:.1f} psi)
+    // , config.Turbo.MaxBoost / 2.0f, (config.Turbo.MaxBoost / 2.0f) * 14.5038f
+
+    std::vector<std::string> extras{
+        fmt::format("Name: {}", config.Name),
+        fmt::format("Models: {}", fmt::join(config.ModelNames, ", ")),
+        config.Plates.empty() ? "Plates: None" : fmt::format("Plates: {}", fmt::join(config.Plates, ", ")),
+        "",
+        fmt::format("RPM Spool Start: {:.2f}", config.Turbo.RPMSpoolStart),
+        fmt::format("RPM Spool End: {:.2f}", config.Turbo.RPMSpoolEnd),
+        fmt::format("Max boost: {:.2f}", config.Turbo.MaxBoost),
+        fmt::format("Spool rate: {:.5f}", config.Turbo.SpoolRate),
+        fmt::format("Anti-lag: {}", config.AntiLag.Enable ?
+            fmt::format("Yes ({} effects)", config.AntiLag.Effects ? "with" : "without") :
+            "No"
+        ),
+        fmt::format("Boost by gear: {}", config.BoostByGear.Enable ? "Yes" : "No")
+    };
+
+    return extras;
+}
+
+bool TurboFix::PromptSave(CTurboScript& context, CConfig& config, Hash model, std::string plate) {
+    UI::Notify("Enter new config name.", true);
+    std::string newName = UI::GetKeyboardResult();
+
+    if (newName.empty()) {
+        UI::Notify("No config name entered. Not saving anything.", true);
+        return false;
+    }
+
+    if (config.Write(newName, model, plate))
+        UI::Notify("Saved as new configuration", true);
+    else
+        UI::Notify("Failed to save as new configuration", true);
+    TurboFix::LoadConfigs();
+
+    return true;
 }

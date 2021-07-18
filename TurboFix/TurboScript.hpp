@@ -22,9 +22,13 @@ public:
         return mActiveConfig;
     }
 
+    bool GetHasTurbo();
     float GetCurrentBoost();
 
     void UpdateActiveConfig(bool playerCheck);
+
+    // Applies the passed config onto the current active config.
+    void ApplyConfig(const CConfig& config);
 
     int& SoundSetIndex() {
         return mSoundSetIndex;

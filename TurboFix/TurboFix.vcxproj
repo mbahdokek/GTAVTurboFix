@@ -107,6 +107,7 @@
     <ClCompile Include="ScriptSettings.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="TurboScriptNPC.cpp" />
+    <ClCompile Include="Util\AddonSpawnerCache.cpp" />
     <ClCompile Include="Util\FileVersion.cpp" />
     <ClCompile Include="Util\Logger.cpp" />
     <ClCompile Include="Util\Paths.cpp" />
@@ -139,6 +140,7 @@
     <ClInclude Include="ScriptSettings.hpp" />
     <ClInclude Include="Script.hpp" />
     <ClInclude Include="TurboScriptNPC.hpp" />
+    <ClInclude Include="Util\AddonSpawnerCache.hpp" />
     <ClInclude Include="Util\FileVersion.hpp" />
     <ClInclude Include="Util\Game.hpp" />
     <ClInclude Include="Util\Logger.hpp" />

@@ -205,7 +205,7 @@ uint32_t TurboFix::LoadConfigs() {
     }
 
     if (configs.empty() ||
-        !configs.empty() && configs[0].Name != "default") {
+        !configs.empty() && !Util::strcmpwi(configs[0].Name, "Default")) {
         logger.Write(WARN, "No default config found, generating a default one and saving it...");
         CConfig defaultConfig;
         defaultConfig.Name = "Default";

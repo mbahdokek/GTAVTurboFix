@@ -6,10 +6,17 @@
 
 class CConfig {
 public:
+    enum class ESaveType {
+        Specific,       // [ID] writes Model + Plate
+        GenericModel,   // [ID] writes Model
+        GenericNone,    // [ID] writes none
+    };
+
     CConfig() = default;
     static CConfig Read(const std::string& configFile);
-    void Write();
-    bool Write(const std::string& newName, Hash model, std::string plate);
+
+    void Write(ESaveType saveType);
+    bool Write(const std::string& newName, Hash model, std::string plate, ESaveType saveType);
 
     // 2.1.0 config or earlier
     // Contains "Models" and not "ModelHashes"/"ModelNames"

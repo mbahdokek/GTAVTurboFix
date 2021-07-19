@@ -195,7 +195,7 @@ uint32_t TurboFix::LoadConfigs() {
         }
 
         CConfig config = CConfig::Read(fs::path(file).string());
-        if (config.Name == "default") {
+        if (Util::strcmpwi(config.Name, "Default")) {
             configs.insert(configs.begin(), config);
             continue;
         }
@@ -208,9 +208,9 @@ uint32_t TurboFix::LoadConfigs() {
         !configs.empty() && configs[0].Name != "default") {
         logger.Write(WARN, "No default config found, generating a default one and saving it...");
         CConfig defaultConfig;
-        defaultConfig.Name = "default";
+        defaultConfig.Name = "Default";
         configs.insert(configs.begin(), defaultConfig);
-        defaultConfig.Write();
+        defaultConfig.Write(CConfig::ESaveType::GenericNone);
     }
 
     logger.Write(INFO, "Configs loaded: %d", configs.size());

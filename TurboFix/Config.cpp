@@ -174,11 +174,11 @@ CConfig CConfig::Read(const std::string& configFile) {
     return config;
 }
 
-void CConfig::Write() {
-    Write(Name, 0, std::string());
+void CConfig::Write(ESaveType saveType) {
+    Write(Name, 0, std::string(), saveType);
 }
 
-bool CConfig::Write(const std::string& newName, Hash model, std::string plate) {
+bool CConfig::Write(const std::string& newName, Hash model, std::string plate, ESaveType saveType) {
     const std::string configsPath =
         Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
         Constants::ModDir +
@@ -197,23 +197,25 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate) {
     }
 
     // [ID]
-    if (model != 0) {
-        ModelHash = model;
-    }
+    if (saveType != ESaveType::GenericNone) {
+        if (model != 0) {
+            ModelHash = model;
+        }
 
-    ini.SetValue("ID", "ModelHash", fmt::format("{:X}", ModelHash).c_str());
+        ini.SetValue("ID", "ModelHash", fmt::format("{:X}", ModelHash).c_str());
 
-    auto& asCache = ASCache::Get();
-    auto it = asCache.find(ModelHash);
-    std::string modelName = it == asCache.end() ? std::string() : it->second;
-    if (!modelName.empty()) {
-        ModelName = modelName;
-        ini.SetValue("ID", "ModelName", modelName.c_str());
-    }
+        auto& asCache = ASCache::Get();
+        auto it = asCache.find(ModelHash);
+        std::string modelName = it == asCache.end() ? std::string() : it->second;
+        if (!modelName.empty()) {
+            ModelName = modelName;
+            ini.SetValue("ID", "ModelName", modelName.c_str());
+        }
 
-    if (!plate.empty()) {
-        Plate = plate;
-        ini.SetValue("ID", "Plate", plate.c_str());
+        if (saveType == ESaveType::Specific) {
+            Plate = plate;
+            ini.SetValue("ID", "Plate", plate.c_str());
+        }
     }
 
 #pragma warning(push)

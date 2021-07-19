@@ -13,7 +13,7 @@
 
 namespace TurboFix {
     std::vector<std::string> FormatTurboConfig(CTurboScript& context, const CConfig& config);
-    bool PromptSave(CTurboScript& context, CConfig& config, Hash model, std::string plate);
+    bool PromptSave(CTurboScript& context, CConfig& config, Hash model, std::string plate, CConfig::ESaveType saveType);
 }
 
 std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
@@ -271,7 +271,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         if (mbCtx.Option("Save",
             { "Save the current configuration to the current active configuration.",
               fmt::format("Current active configuration: {}.", context.ActiveConfig()->Name) })) {
-            config->Write();
+            config->Write(CConfig::ESaveType::GenericNone); // Don't write model/plate
             TurboFix::LoadConfigs();
             UI::Notify("Saved changes", true);
         }
@@ -279,7 +279,7 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         if (mbCtx.Option("Save as specific vehicle",
             { "Save current turbo configuration for the current vehicle model and license plate.",
                "Automatically loads for vehicles of this model with this license plate." })) {
-            if (PromptSave(context, *config, model, plate))
+            if (PromptSave(context, *config, model, plate, CConfig::ESaveType::Specific))
                 TurboFix::LoadConfigs();
         }
 
@@ -287,13 +287,13 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
             { "Save current turbo configuration for the current vehicle model."
                 "Automatically loads for any vehicle of this model.",
                 "Overridden by license plate config, if present." })) {
-            if (PromptSave(context, *config, model, std::string()))
+            if (PromptSave(context, *config, model, std::string(), CConfig::ESaveType::GenericModel))
                 TurboFix::LoadConfigs();
         }
 
         if (mbCtx.Option("Save as generic",
             { "Save current turbo configuration, but don't make it automatically load for any vehicle." })) {
-            if (PromptSave(context, *config, 0, std::string()))
+            if (PromptSave(context, *config, 0, std::string(), CConfig::ESaveType::GenericNone))
                 TurboFix::LoadConfigs();
         }
     });
@@ -321,7 +321,7 @@ std::vector<std::string> TurboFix::FormatTurboConfig(CTurboScript& context, cons
 
     std::vector<std::string> extras{
         fmt::format("Name: {}", config.Name),
-        fmt::format("Model: {}", config.ModelName),
+        fmt::format("Model: {}", config.ModelName.empty() ? "None (Generic)" : config.ModelName),
         fmt::format("Plate: {}", config.Plate.empty() ? "None" : fmt::format("[{}]", config.Plate)),
         "",
         fmt::format("RPM Spool Start: {:.2f}", config.Turbo.RPMSpoolStart),
@@ -338,7 +338,7 @@ std::vector<std::string> TurboFix::FormatTurboConfig(CTurboScript& context, cons
     return extras;
 }
 
-bool TurboFix::PromptSave(CTurboScript& context, CConfig& config, Hash model, std::string plate) {
+bool TurboFix::PromptSave(CTurboScript& context, CConfig& config, Hash model, std::string plate, CConfig::ESaveType saveType) {
     UI::Notify("Enter new config name.", true);
     std::string newName = UI::GetKeyboardResult();
 
@@ -347,7 +347,7 @@ bool TurboFix::PromptSave(CTurboScript& context, CConfig& config, Hash model, st
         return false;
     }
 
-    if (config.Write(newName, model, plate))
+    if (config.Write(newName, model, plate, saveType))
         UI::Notify("Saved as new configuration", true);
     else
         UI::Notify("Failed to save as new configuration", true);

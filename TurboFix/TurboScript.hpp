@@ -44,6 +44,7 @@ protected:
     float updateAntiLag(float currentBoost, float newBoost, float limBoost);
     void updateDial(float newBoost);
     void updateTurbo();
+    void updateSoundSetIndex(const std::string& soundSet);
 
     const CScriptSettings& mSettings;
     std::vector<CConfig>& mConfigs;

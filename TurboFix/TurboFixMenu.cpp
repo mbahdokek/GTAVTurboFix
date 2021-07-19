@@ -319,6 +319,20 @@ std::vector<std::string> TurboFix::FormatTurboConfig(CTurboScript& context, cons
     //  (approx {:.1f} bar/{:.1f} psi)
     // , config.Turbo.MaxBoost / 2.0f, (config.Turbo.MaxBoost / 2.0f) * 14.5038f
 
+    std::string antilagExtra;
+    if (config.AntiLag.Enable) {
+        if (config.AntiLag.Effects) {
+            antilagExtra = fmt::format("Yes (Soundset: {} @ {:.2f})",
+                config.AntiLag.SoundSet, config.AntiLag.Volume);
+        }
+        else {
+            antilagExtra = "Yes (no effects)";
+        }
+    }
+    else {
+        antilagExtra = "No";
+    }
+
     std::vector<std::string> extras{
         fmt::format("Name: {}", config.Name),
         fmt::format("Model: {}", config.ModelName.empty() ? "None (Generic)" : config.ModelName),
@@ -328,10 +342,7 @@ std::vector<std::string> TurboFix::FormatTurboConfig(CTurboScript& context, cons
         fmt::format("RPM Spool End: {:.2f}", config.Turbo.RPMSpoolEnd),
         fmt::format("Max boost: {:.2f}", config.Turbo.MaxBoost),
         fmt::format("Spool rate: {:.5f}", config.Turbo.SpoolRate),
-        fmt::format("Anti-lag: {}", config.AntiLag.Enable ?
-            fmt::format("Yes ({} effects)", config.AntiLag.Effects ? "with" : "without") :
-            "No"
-        ),
+        fmt::format("Anti-lag: {}", antilagExtra),
         fmt::format("Boost by gear: {}", config.BoostByGear.Enable ? "Yes" : "No")
     };
 

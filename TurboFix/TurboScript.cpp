@@ -96,6 +96,8 @@ void CTurboScript::UpdateActiveConfig(bool playerCheck) {
     if (mActiveConfig->Turbo.ForceTurbo && !VEHICLE::IS_TOGGLE_MOD_ON(mVehicle, VehicleToggleModTurbo)) {
         VEHICLE::TOGGLE_VEHICLE_MOD(mVehicle, VehicleToggleModTurbo, true);
     }
+
+    updateSoundSetIndex(mActiveConfig->AntiLag.SoundSet);
 }
 
 void CTurboScript::ApplyConfig(const CConfig& config) {
@@ -129,6 +131,8 @@ void CTurboScript::ApplyConfig(const CConfig& config) {
     mActiveConfig->Dial.VacuumOffset = config.Dial.VacuumOffset;
     mActiveConfig->Dial.VacuumScale = config.Dial.VacuumScale;
     mActiveConfig->Dial.BoostIncludesVacuum = config.Dial.BoostIncludesVacuum;
+
+    updateSoundSetIndex(mActiveConfig->AntiLag.SoundSet);
 }
 
 void CTurboScript::Tick() {
@@ -411,4 +415,16 @@ void CTurboScript::updateTurbo() {
     }
 
     VExt::SetTurbo(mVehicle, newBoost);
+}
+
+void CTurboScript::updateSoundSetIndex(const std::string& soundSet) {
+    auto soundSetIt = std::find_if(mSoundSets.begin(), mSoundSets.end(), [soundSet](const auto& other) {
+        return other.Name == soundSet;
+    });
+    if (soundSetIt != mSoundSets.end()) {
+        mSoundSetIndex = static_cast<int>(soundSetIt - mSoundSets.begin());
+    }
+    else {
+        mSoundSetIndex = 0;
+    }
 }

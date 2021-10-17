@@ -50,6 +50,13 @@ public:
 
         // How many % of no boost after 1 second: 0.97f
         float UnspoolRate = 0.97f;
+
+        // RPM where boost/power starts dropping. Effective if > spool end RPM
+        float FalloffRPM = 0.0f;
+
+        // Boost at redline of max boost, if FalloffRPM is active
+        float FalloffBoost = 0.0f;
+
     } Turbo;
 
     // BoostByGear

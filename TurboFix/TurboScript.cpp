@@ -112,6 +112,9 @@ void CTurboScript::ApplyConfig(const CConfig& config) {
     mActiveConfig->Turbo.SpoolRate = config.Turbo.SpoolRate;
     mActiveConfig->Turbo.UnspoolRate = config.Turbo.UnspoolRate;
 
+    mActiveConfig->Turbo.FalloffRPM = config.Turbo.FalloffRPM;
+    mActiveConfig->Turbo.FalloffBoost = config.Turbo.FalloffBoost;
+
     mActiveConfig->BoostByGear.Enable = config.BoostByGear.Enable;
     mActiveConfig->BoostByGear.Gear = config.BoostByGear.Gear;
 
@@ -351,12 +354,14 @@ void CTurboScript::updateTurbo() {
     //   0.2 RPM to RPMSpoolStart -> NA
     //   RPMSpoolEnd to 1.0 RPM -> MaxBoost
 
-    float boostClosed = map(VExt::GetCurrentRPM(mVehicle), 
+    float rpm = VExt::GetCurrentRPM(mVehicle);
+
+    float boostClosed = map(rpm,
         0.2f, 1.0f, 
         0.0f, mActiveConfig->Turbo.MinBoost);
     boostClosed = std::clamp(boostClosed, mActiveConfig->Turbo.MinBoost, 0.0f);
 
-    float boostWOT = map(VExt::GetCurrentRPM(mVehicle), 
+    float boostWOT = map(rpm,
         mActiveConfig->Turbo.RPMSpoolStart, mActiveConfig->Turbo.RPMSpoolEnd,
         0.0f, mActiveConfig->Turbo.MaxBoost);
     boostWOT = std::clamp(boostWOT, 0.0f, mActiveConfig->Turbo.MaxBoost);
@@ -400,6 +405,19 @@ void CTurboScript::updateTurbo() {
 
     if (mActiveConfig->AntiLag.Enable) {
         newBoost = updateAntiLag(currentBoost, newBoost, limBoost);
+    }
+
+    // Only need to limit boost to falloff if boost is higher than predicted.
+    // Only take absolute max in account, no need to take bbg in account.
+    if (mActiveConfig->Turbo.FalloffRPM > mActiveConfig->Turbo.RPMSpoolEnd &&
+        rpm >= mActiveConfig->Turbo.FalloffRPM) {
+
+        float falloffBoost = map(rpm,
+            mActiveConfig->Turbo.FalloffRPM, 1.0f,
+            mActiveConfig->Turbo.MaxBoost, mActiveConfig->Turbo.FalloffBoost);
+
+        if (newBoost > falloffBoost)
+            newBoost = falloffBoost;
     }
 
     if (!mIsNPC)

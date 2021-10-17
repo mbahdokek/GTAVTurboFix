@@ -139,6 +139,9 @@ CConfig CConfig::Read(const std::string& configFile) {
     LOAD_VAL("Turbo", "SpoolRate", config.Turbo.SpoolRate);
     LOAD_VAL("Turbo", "UnspoolRate", config.Turbo.UnspoolRate);
 
+    LOAD_VAL("Turbo", "FalloffRPM", config.Turbo.FalloffRPM);
+    LOAD_VAL("Turbo", "FalloffBoost", config.Turbo.FalloffBoost);
+
     // [BoostByGear]
     LOAD_VAL("BoostByGear", "Enable", config.BoostByGear.Enable);
     config.BoostByGear.Gear.clear();
@@ -228,6 +231,9 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
     SAVE_VAL("Turbo", "MaxBoost", Turbo.MaxBoost);
     SAVE_VAL("Turbo", "SpoolRate", Turbo.SpoolRate);
     SAVE_VAL("Turbo", "UnspoolRate", Turbo.UnspoolRate);
+
+    SAVE_VAL("Turbo", "FalloffRPM", Turbo.FalloffRPM);
+    SAVE_VAL("Turbo", "FalloffBoost", Turbo.FalloffBoost);
 
     // [BoostByGear]
     SAVE_VAL("BoostByGear", "Enable", BoostByGear.Enable);

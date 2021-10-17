@@ -107,6 +107,13 @@ std::vector<CScriptMenu<CTurboScript>::CSubmenu> TurboFix::BuildMenu() {
         mbCtx.FloatOptionCb("Unspool rate", config->Turbo.UnspoolRate, 0.01f, 0.999999f, 0.00005f, MenuUtils::GetKbFloat,
             { "How fast the turbo slows down. Calculation is same as above." });
 
+        mbCtx.FloatOptionCb("Falloff RPM", config->Turbo.FalloffRPM, 0.2f, 1.0, 0.01f, MenuUtils::GetKbFloat,
+            { "RPM where boost/added power starts falling off.",
+              "Only active if higher than 'RPM Spool End', otherwise no falloff happens." });
+
+        mbCtx.FloatOptionCb("Falloff boost", config->Turbo.FalloffBoost, 0.0f, 1000000.0f, 0.01f, MenuUtils::GetKbFloat,
+            { "Boost at redline, if falloff is active." });
+
         mbCtx.MenuOption("Anti-lag settings", "antilagsettingsmenu",
             { "Anti-lag keeps the turbo spinning when off-throttle at higher RPMs." });
 

@@ -71,7 +71,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>TF_EXPORTS;WIN32_LEAN_AND_MEAN;NOMINMAX;NOGDI;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\fmt\include;$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty\GTAVMenuBase;$(SolutionDir)thirdparty;$(SolutionDir)thirdparty\irrKlang\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>

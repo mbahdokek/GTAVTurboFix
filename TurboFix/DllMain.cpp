@@ -3,8 +3,8 @@
 
 #include "Memory/Patches.h"
 #include "Memory/VehicleExtensions.hpp"
-#include "Memory/Versions.h"
-#include "Util/FileVersion.h"
+#include "Memory/Versions.hpp"
+#include "Util/FileVersion.hpp"
 #include "Util/Logger.hpp"
 #include "Util/Paths.hpp"
 

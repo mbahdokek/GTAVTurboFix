@@ -1,4 +1,4 @@
-#include "FileVersion.h"
+#include "FileVersion.hpp"
 
 #include "../Util/Logger.hpp"
 #include "../Util/Paths.hpp"

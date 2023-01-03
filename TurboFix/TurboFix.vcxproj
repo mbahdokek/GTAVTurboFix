@@ -132,7 +132,7 @@
     <ClInclude Include="Memory\Patches.h" />
     <ClInclude Include="Memory\PatternInfo.h" />
     <ClInclude Include="Memory\VehicleExtensions.hpp" />
-    <ClInclude Include="Memory\Versions.h" />
+    <ClInclude Include="Memory\Versions.hpp" />
     <ClInclude Include="ScriptMenuUtils.h" />
     <ClInclude Include="TurboFix.h" />
     <ClInclude Include="TurboScript.hpp" />
@@ -141,7 +141,7 @@
     <ClInclude Include="Script.hpp" />
     <ClInclude Include="TurboScriptNPC.hpp" />
     <ClInclude Include="Util\AddonSpawnerCache.hpp" />
-    <ClInclude Include="Util\FileVersion.h" />
+    <ClInclude Include="Util\FileVersion.hpp" />
     <ClInclude Include="Util\Game.hpp" />
     <ClInclude Include="Util\Logger.hpp" />
     <ClInclude Include="Util\Math.hpp" />

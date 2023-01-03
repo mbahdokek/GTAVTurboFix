@@ -1,10 +1,11 @@
 #include "NativeMemory.hpp"
 
 #include "../Util/Logger.hpp"
-
 #include <Windows.h>
 #include <Psapi.h>
 #include <sstream>
+
+#include "inc/main.h"
 
 namespace {
     template<typename Out>
@@ -24,6 +25,8 @@ namespace {
     }
 }
 
+extern eGameVersion g_gameVersion;
+
 namespace mem {
 
     uintptr_t(*GetAddressOfEntity)(int entity) = nullptr;
@@ -34,17 +37,35 @@ namespace mem {
                                                             "xxxxxxxx????xxxxxxx");
         if (!addr) logger.Write(ERROR, "Couldn't find GetAddressOfEntity");
         GetAddressOfEntity = reinterpret_cast<uintptr_t(*)(int)>(addr);
-        
-        addr = FindPattern("\x0F\xB7\x05\x00\x00\x00\x00"
-            "\x45\x33\xC9\x4C\x8B\xDA\x66\x85\xC0"
-            "\x0F\x84\x00\x00\x00\x00"
-            "\x44\x0F\xB7\xC0\x33\xD2\x8B\xC1\x41\xF7\xF0\x48"
-            "\x8B\x05\x00\x00\x00\x00"
-            "\x4C\x8B\x14\xD0\xEB\x09\x41\x3B\x0A\x74\x54",
-            "xxx????xxxxxxxxxxx????"
-            "xxxxxxxxxxxxxx????xxxxxxxxxxx");
-        if (!addr) logger.Write(ERROR, "Couldn't find GetModelInfo");
-        GetModelInfo = reinterpret_cast<uintptr_t(*)(unsigned int modelHash, int *index)>(addr);
+
+        if (g_gameVersion < 58) {
+            addr = FindPattern(
+                "\x0F\xB7\x05\x00\x00\x00\x00"
+                "\x45\x33\xC9\x4C\x8B\xDA\x66\x85\xC0"
+                "\x0F\x84\x00\x00\x00\x00"
+                "\x44\x0F\xB7\xC0\x33\xD2\x8B\xC1\x41\xF7\xF0\x48"
+                "\x8B\x05\x00\x00\x00\x00"
+                "\x4C\x8B\x14\xD0\xEB\x09\x41\x3B\x0A\x74\x54",
+                "xxx????"
+                "xxxxxxxxx"
+                "xx????"
+                "xxxxxxxxxxxx"
+                "xx????"
+                "xxxxxxxxxxx");
+
+            if (!addr) {
+                logger.Write(ERROR, "Couldn't find GetModelInfo");
+            }
+        }
+        else {
+            addr = FindPattern("\xEB\x09\x41\x3B\x0A\x74\x54", "xxxxxxx");
+            if (!addr) {
+                logger.Write(ERROR, "Couldn't find GetModelInfo (v58+)");
+            }
+            addr = addr - 0x2C;
+        }
+
+        GetModelInfo = reinterpret_cast<uintptr_t(*)(unsigned int modelHash, int* index)>(addr);
     }
 
     uintptr_t FindPattern(const char* pattern, const char* mask) {
@@ -106,10 +127,16 @@ namespace mem {
 
         uintptr_t pos = 0;
         const uintptr_t searchLen = bytesStr.size();
+        std::vector<uint8_t> bytes;
+        // Thanks Zolika for the performance improvement!
+        for (const auto& str : bytesStr) {
+            if (str == "??" || str == "?") bytes.push_back(0);
+            else bytes.push_back(static_cast<uint8_t>(std::strtoul(str.c_str(), nullptr, 16)));
+        }
 
         for (auto* retAddress = start_offset; retAddress < start_offset + size; retAddress++) {
             if (bytesStr[pos] == "??" || bytesStr[pos] == "?" ||
-                *retAddress == static_cast<uint8_t>(std::strtoul(bytesStr[pos].c_str(), nullptr, 16))) {
+                *retAddress == bytes[pos]) {
                 if (pos + 1 == bytesStr.size())
                     return (reinterpret_cast<uintptr_t>(retAddress) - searchLen + 1);
                 pos++;

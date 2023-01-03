@@ -101,13 +101,13 @@
     <ClInclude Include="Memory\Offsets.hpp">
       <Filter>Memory</Filter>
     </ClInclude>
-    <ClInclude Include="Memory\Versions.hpp">
+    <ClInclude Include="Memory\Versions.h">
       <Filter>Memory</Filter>
     </ClInclude>
     <ClInclude Include="Util\Logger.hpp">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="Util\FileVersion.hpp">
+    <ClInclude Include="Util\FileVersion.h">
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Util\Paths.hpp">

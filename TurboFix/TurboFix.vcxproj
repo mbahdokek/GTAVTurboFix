@@ -21,13 +21,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -132,7 +132,7 @@
     <ClInclude Include="Memory\Patches.h" />
     <ClInclude Include="Memory\PatternInfo.h" />
     <ClInclude Include="Memory\VehicleExtensions.hpp" />
-    <ClInclude Include="Memory\Versions.hpp" />
+    <ClInclude Include="Memory\Versions.h" />
     <ClInclude Include="ScriptMenuUtils.h" />
     <ClInclude Include="TurboFix.h" />
     <ClInclude Include="TurboScript.hpp" />
@@ -141,7 +141,7 @@
     <ClInclude Include="Script.hpp" />
     <ClInclude Include="TurboScriptNPC.hpp" />
     <ClInclude Include="Util\AddonSpawnerCache.hpp" />
-    <ClInclude Include="Util\FileVersion.hpp" />
+    <ClInclude Include="Util\FileVersion.h" />
     <ClInclude Include="Util\Game.hpp" />
     <ClInclude Include="Util\Logger.hpp" />
     <ClInclude Include="Util\Math.hpp" />

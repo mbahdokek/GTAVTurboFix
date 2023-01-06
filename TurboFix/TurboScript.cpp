@@ -256,10 +256,9 @@ void CTurboScript::runPtfx(Vehicle vehicle, bool loud) {
         Vector3 bonePos = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(vehicle, boneIdx);
         Vector3 boneRot{};
         if (getGameVersion() >= 50) {
-            boneRot = ENTITY::_GET_ENTITY_BONE_ROTATION_LOCAL(vehicle, boneIdx);
+            boneRot = ENTITY::GET_ENTITY_BONE_OBJECT_ROTATION(vehicle, boneIdx);
         }
-        Vector3 boneOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle,
-            bonePos.x, bonePos.y, bonePos.z);
+        Vector3 boneOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, bonePos);
 
         float explSz;
         if (loud) {
@@ -274,7 +273,7 @@ void CTurboScript::runPtfx(Vehicle vehicle, bool loud) {
 
         GRAPHICS::USE_PARTICLE_FX_ASSET("core");
         GRAPHICS::START_PARTICLE_FX_NON_LOOPED_ON_ENTITY("veh_backfire", vehicle,
-            boneOff.x, boneOff.y, boneOff.z, boneRot.x, boneRot.y, boneRot.z, explSz, false, false, false);
+            boneOff, boneRot, explSz, false, false, false);
     }
 }
 

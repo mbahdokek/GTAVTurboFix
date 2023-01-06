@@ -89,6 +89,9 @@
     <Filter Include="Compatibility">
       <UniqueIdentifier>{99b8860a-eccb-462b-aba5-c6127d3ec17d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ThirdParty\ScriptHookV">
+      <UniqueIdentifier>{f8331346-9eda-42c3-ac23-54624f544d94}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Memory\NativeMemory.hpp">
@@ -171,6 +174,21 @@
     <ClInclude Include="SoundSet.hpp" />
     <ClInclude Include="Util\AddonSpawnerCache.hpp">
       <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\enums.h">
+      <Filter>ThirdParty\ScriptHookV</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\main.h">
+      <Filter>ThirdParty\ScriptHookV</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\nativeCaller.h">
+      <Filter>ThirdParty\ScriptHookV</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\natives.h">
+      <Filter>ThirdParty\ScriptHookV</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\types.h">
+      <Filter>ThirdParty\ScriptHookV</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

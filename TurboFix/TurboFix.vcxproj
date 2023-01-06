@@ -122,6 +122,11 @@
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menusettings.h" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menuutils.h" />
     <ClInclude Include="..\thirdparty\irrKlang\include\irrKlang.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\enums.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\main.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\nativeCaller.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\natives.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\types.h" />
     <ClInclude Include="Compatibility.h" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Constants.hpp" />

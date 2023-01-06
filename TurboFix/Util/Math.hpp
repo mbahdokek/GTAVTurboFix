@@ -6,26 +6,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-// Vector3 but double and no padding. 
-struct V3D {
-    V3D(Vector3 v3f)
-        : x(v3f.x), y(v3f.y), z(v3f.z) { }
-    V3D(double x, double y, double z)
-        : x(x), y(y), z(z) { }
-    V3D() = default;
-    Vector3 to_v3f() {
-        Vector3 v{
-            static_cast<float>(x), 0,
-            static_cast<float>(y), 0,
-            static_cast<float>(z), 0
-        };
-        return v;
-    }
-    double x;
-    double y;
-    double z;
-};
-
 template <typename T>
 constexpr T sgn(T val) {
     return static_cast<T>((T{} < val) - (val < T{}));

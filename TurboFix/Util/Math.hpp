@@ -165,3 +165,23 @@ Vector3T RotationToDirection(Vector3T rot) {
     dir.z = sin(num2);
     return dir;
 }
+
+// https://gamedev.stackexchange.com/questions/172147/convert-3d-direction-vectors-to-yaw-pitch-roll-angles
+template <typename Vector3T>
+Vector3T RotationFromVectors(Vector3T forward, Vector3T up) {
+    auto pitch = asin(forward.z);
+    auto yaw = -atan2(forward.x, forward.y);
+
+    auto planeRightX = sin(yaw);
+    auto planeRightY = cos(yaw);
+
+    auto roll = asin(up.x * planeRightX + up.y * planeRightY);
+    if (up.z < 0)
+        roll = sgn(roll) * static_cast<decltype(roll)>(M_PI) - roll;
+
+    return {
+        pitch,
+        roll,
+        yaw
+    };
+}

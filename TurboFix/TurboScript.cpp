@@ -2,19 +2,28 @@
 
 #include "Compatibility.h"
 #include "Constants.hpp"
+#include "Memory/NativeMemory.hpp"
+#include "Util/Game.hpp"
 #include "Util/Math.hpp"
 #include "Util/Paths.hpp"
-#include "Util/Game.hpp"
 #include "Util/UI.hpp"
 #include "Util/String.hpp"
 
 #include <inc/enums.h>
 #include <inc/natives.h>
 #include <fmt/format.h>
-#include <filesystem>
+#include <DirectXMath.h>
 #include <algorithm>
+#include <filesystem>
 
+using namespace DirectX;
 using VExt = VehicleExtensions;
+
+// Thanks @alexguirre for this! Fixes ptfx positions for tuned exhausts.
+using CVehicle_GetExhaust_t = void(*)(/*CVehicle*/void*, uint32_t exhaustBoneId, XMMATRIX& outTransform, uint32_t& outId);
+static CVehicle_GetExhaust_t CVehicle_GetExhaust = []() {
+    return (CVehicle_GetExhaust_t)(mem::FindPattern("48 8B D9 44 0F 29 48 ? 48 8B 41 20 48 8B 80 ? ? ? ? 48 8B 00") - 0x39);
+}();
 
 CTurboScript::CTurboScript(
     CScriptSettings& settings,
@@ -35,25 +44,6 @@ CTurboScript::CTurboScript(
     mSoundEngine = irrklang::createIrrKlangDevice(irrklang::ESOD_DIRECT_SOUND_8);
     mSoundEngine->setDefault3DSoundMinDistance(7.5f);
     mSoundEngine->setSoundVolume(0.20f);
-
-    mExhaustBones = {
-        "exhaust",
-        "exhaust_2",
-        "exhaust_3",
-        "exhaust_4",
-        "exhaust_5",
-        "exhaust_6",
-        "exhaust_7",
-        "exhaust_8",
-        "exhaust_9",
-        "exhaust_10",
-        "exhaust_11",
-        "exhaust_12",
-        "exhaust_13",
-        "exhaust_14",
-        "exhaust_15",
-        "exhaust_16",
-    };
 }
 
 CTurboScript::~CTurboScript() = default;
@@ -248,17 +238,58 @@ void CTurboScript::updateDial(float newBoost) {
 }
 
 void CTurboScript::runPtfx(Vehicle vehicle, bool loud) {
-    for (const auto& bone : mExhaustBones) {
-        int boneIdx = ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(vehicle, bone.c_str());
-        if (boneIdx == -1)
+    int numPtfxPlayed = 0;
+
+    for (uint32_t exhaustBoneId = 56/*exhaust*/; exhaustBoneId <= 87/*exhaust_32*/; exhaustBoneId++) {
+        const auto& exhaustBoneName = mExhaustBones[exhaustBoneId - 56];
+        XMMATRIX transform;
+        uint32_t id;
+        CVehicle_GetExhaust(VExt::GetAddress(vehicle), exhaustBoneId, transform, id);
+        if (!XMVector3NotEqual(XMVectorZero(), transform.r[0]))
             continue;
 
-        Vector3 bonePos = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(vehicle, boneIdx);
-        Vector3 boneRot{};
-        if (getGameVersion() >= 50) {
-            boneRot = ENTITY::GET_ENTITY_BONE_OBJECT_ROTATION(vehicle, boneIdx);
+        bool isMod = id >> 24 != 0; // GetExhaust still returns the base exhaust when a mod exhaust is installed, so this can be used to check it
+        if (isMod) {
+            uint32_t exhaustIndex = id >> 24; // == exhaustBoneId - 56
+            uint32_t modBoneIndex = id & 0xFFFFFF; // bone where the mod is attached, == CVehicleModVisible.bone or == CVehicleModLink.bone
         }
-        Vector3 boneOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, bonePos);
+        else {
+            uint32_t boneIndex = id;
+            if (VEHICLE::GET_VEHICLE_MOD(mVehicle, eVehicleMod::VehicleModExhaust) != -1)
+                continue;
+        }
+
+        XMVECTORF32 right, forward, up, pos, rightPos, forwardPos, upPos;
+        right.v = transform.r[0];
+        forward.v = transform.r[1];
+        up.v = transform.r[2];
+        pos.v = transform.r[3];
+        rightPos.v = XMVectorAdd(pos, XMVectorScale(right, 1.0f));
+        forwardPos.v = XMVectorAdd(pos, XMVectorScale(forward, 1.0f));
+        upPos.v = XMVectorAdd(pos, XMVectorScale(up, 1.0f));
+
+        //GRAPHICS::DRAW_LINE({ pos.f[0], pos.f[1], pos.f[2] },
+        //    { rightPos.f[0], rightPos.f[1], rightPos.f[2] },
+        //    255, 0, 0, 255);
+        //GRAPHICS::DRAW_LINE({ pos.f[0], pos.f[1], pos.f[2] },
+        //    { forwardPos.f[0], forwardPos.f[1], forwardPos.f[2] },
+        //    0, 255, 0, 255);
+        //GRAPHICS::DRAW_LINE({ pos.f[0], pos.f[1], pos.f[2] },
+        //    { upPos.f[0], upPos.f[1], upPos.f[2] },
+        //    0, 0, 255, 255);
+
+        Vector3 boneOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, { pos.f[0], pos.f[1], pos.f[2] });
+        Vector3 boneFwdOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, { forwardPos.f[0], forwardPos.f[1], forwardPos.f[2] });
+        Vector3 boneUpOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, { upPos.f[0], upPos.f[1], upPos.f[2] });
+        Vector3 boneRightOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, { rightPos.f[0], rightPos.f[1], rightPos.f[2] });
+
+        Vector3 relFwd = Normalize(boneFwdOff - boneOff);
+        Vector3 relUp = Normalize(boneUpOff - boneOff);
+
+        Vector3 boneRot =  RotationFromVectors(relFwd, relUp);
+        boneRot.x = rad2deg(boneRot.x);
+        boneRot.y = rad2deg(boneRot.y);
+        boneRot.z = rad2deg(boneRot.z);
 
         float explSz;
         if (loud) {
@@ -274,6 +305,40 @@ void CTurboScript::runPtfx(Vehicle vehicle, bool loud) {
         GRAPHICS::USE_PARTICLE_FX_ASSET("core");
         GRAPHICS::START_PARTICLE_FX_NON_LOOPED_ON_ENTITY("veh_backfire", vehicle,
             boneOff, boneRot, explSz, false, false, false);
+
+        numPtfxPlayed++;
+    }
+
+    // Fallback: None has been played, so play on whatever exhausts it had originally.
+    // Could happen with exhaust bones on modded exhausts using the same as the original.
+    if (numPtfxPlayed == 0) {
+        for (const auto& bone : mExhaustBones) {
+            int boneIdx = ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(vehicle, bone.c_str());
+            if (boneIdx == -1)
+                continue;
+
+            Vector3 bonePos = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(vehicle, boneIdx);
+            Vector3 boneRot{};
+            if (getGameVersion() >= 50) {
+                boneRot = ENTITY::GET_ENTITY_BONE_OBJECT_ROTATION(vehicle, boneIdx);
+            }
+            Vector3 boneOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, bonePos);
+
+            float explSz;
+            if (loud) {
+                explSz = 1.25f;
+            }
+            else {
+                explSz = map(VExt::GetCurrentRPM(mVehicle),
+                    mActiveConfig->Turbo.RPMSpoolStart, mActiveConfig->Turbo.RPMSpoolEnd,
+                    0.75f, 1.25f);
+                explSz = std::clamp(explSz, 0.75f, 1.25f);
+            }
+
+            GRAPHICS::USE_PARTICLE_FX_ASSET("core");
+            GRAPHICS::START_PARTICLE_FX_NON_LOOPED_ON_ENTITY("veh_backfire", vehicle,
+                boneOff, boneRot, explSz, false, false, false);
+        }
     }
 }
 

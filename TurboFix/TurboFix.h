@@ -32,9 +32,17 @@ TF_API float TF_GetAbsoluteBoost();
  */
 TF_API float TF_GetAbsoluteBoostMin();
 
-
 /**
  * \brief           Get max turbo boost.
  * \return          Max turbo boost level. 0 if not active.
  */
 TF_API float TF_GetAbsoluteBoostMax();
+
+TF_API const char* TF_GetActiveConfigName();
+
+/**
+ * \brief           Get turbo boost at WOT at a given rpm.
+ * \param rpm       Rpm to get boost at. If < 0.0f, returns max boost.
+ * \return          Boost for specified thing. 0 if not active or none gotten.
+ */
+TF_API float TF_GetAbsoluteBoostConfig(const char* configName, float rpm);

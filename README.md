@@ -6,8 +6,9 @@ A script for Grand Theft Auto V, that fixes the broken turbo behavior.
 
 Forked from ikt32, Check the original for more info !!!
 
+Showcase:
+
 [![](https://img.youtube.com/vi/kEQCRlDJv-w/hqdefault.jpg)](http://www.youtube.com/watch?v=kEQCRlDJv-w "Click to play on Youtube.com")
-Video Showcase
 
 ## Changes
 - Patches.cpp : Changed the Turbo Limiter NOP patching to \xC7\x43\x7C\x00\x00\x80\x3F\x48\x8B\xCE, now boost can be set higher than 1.0 again

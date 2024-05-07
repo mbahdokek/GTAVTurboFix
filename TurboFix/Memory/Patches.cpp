@@ -10,8 +10,8 @@ MemoryPatcher::Patcher BoostLimiterPatcher("Boost Limiter", boostLimiter, true);
 bool Patches::Error = false;
 
 void Patches::SetPatterns() {
-    boostLimiter = MemoryPatcher::PatternInfo("\xC7\x43\x64\x00\x00\x80\x3F", "xxxxxxx",
-                                         { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
+    boostLimiter = MemoryPatcher::PatternInfo("\xC7\x43\x7C\x00\x00\x80\x3F\x48\x8B\xCE", 
+        "xxxxxxxxxx", {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90});
 }
 
 bool Patches::Test() {

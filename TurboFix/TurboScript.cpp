@@ -46,7 +46,12 @@ CTurboScript::CTurboScript(
     mSoundEngine->setSoundVolume(0.20f);
 }
 
-CTurboScript::~CTurboScript() = default;
+CTurboScript::~CTurboScript() {
+        // Remove PTFX assets
+    STREAMING::REMOVE_NAMED_PTFX_ASSET("weap_sm_bom");
+    STREAMING::REMOVE_NAMED_PTFX_ASSET("veh_sanctus");
+    STREAMING::REMOVE_NAMED_PTFX_ASSET("turbo_flame");
+}
 
 void CTurboScript::UpdateActiveConfig(bool playerCheck) {
     if (playerCheck) {
@@ -237,6 +242,61 @@ void CTurboScript::updateDial(float newBoost) {
     }
 }
 
+void firePtfx(Entity vehicle, float boneOffX, float boneOffY, float boneOffZ,
+    float boneRotX, float boneRotY, float boneRotZ, float explSz) {
+    static int longFlameHandle = -1;
+    bool checkPtfxAsset = STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("weap_sm_bom") && STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("veh_sanctus");
+    if (!checkPtfxAsset) {
+        STREAMING::REQUEST_NAMED_PTFX_ASSET("weap_sm_bom");
+        STREAMING::REQUEST_NAMED_PTFX_ASSET("veh_sanctus");
+        STREAMING::REQUEST_NAMED_PTFX_ASSET("turbo_flame");
+    }
+    if (longFlameHandle != -1) {
+        GRAPHICS::STOP_PARTICLE_FX_LOOPED(longFlameHandle, false);
+    }
+    bool checkPtfxAsset2 = STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("turbo_flame");
+        // Start the standard flame effect  
+        bool cycleFx = (rand() % 2 == 0);
+        if (cycleFx) {
+            GRAPHICS::USE_PARTICLE_FX_ASSET("weap_sm_bom");
+            GRAPHICS::START_PARTICLE_FX_NON_LOOPED_ON_ENTITY("muz_sm_bom_cannon", vehicle,
+                boneOffX, boneOffY, boneOffZ, boneRotX, boneRotY, (boneRotZ - 180.0f), (explSz - 0.95f), false, false, false);
+        }
+        else {
+            GRAPHICS::USE_PARTICLE_FX_ASSET("veh_sanctus");
+            GRAPHICS::START_PARTICLE_FX_NON_LOOPED_ON_ENTITY("veh_sanctus_backfire", vehicle,
+                boneOffX, boneOffY, boneOffZ, boneRotX, boneRotY, boneRotZ, (explSz - 0.05f), false, false, false);
+        }
+            // Randomly decide second flame and check for ptfx file
+            if (checkPtfxAsset2) {
+                // Start second flame on delay
+                if (rand() % 2 == 0) {
+                    WAIT(300);
+                    GRAPHICS::USE_PARTICLE_FX_ASSET("turbo_flame");
+                    GRAPHICS::START_PARTICLE_FX_NON_LOOPED_ON_ENTITY("backfire_blue", vehicle,
+                        boneOffX, boneOffY, boneOffZ, boneRotX, boneRotY, boneRotZ, explSz, false, false, false);
+                }
+            }
+            else {
+                // if turbo_flame.ypt not found play vanilla backfire (for compatibility)
+                GRAPHICS::USE_PARTICLE_FX_ASSET("core");
+                GRAPHICS::START_PARTICLE_FX_NON_LOOPED_ON_ENTITY("veh_backfire", vehicle,
+                    boneOffX, boneOffY, boneOffZ, boneRotX, boneRotY, boneRotZ, explSz, false, false, false);
+            }
+            if ((rand() % 3 == 0) && checkPtfxAsset2) {
+                GRAPHICS::USE_PARTICLE_FX_ASSET("turbo_flame");
+                longFlameHandle = GRAPHICS::START_PARTICLE_FX_LOOPED_ON_ENTITY("exp_sht_flame_nop", vehicle,
+                    boneOffX, boneOffY, boneOffZ, boneRotX, (boneRotY + 90.0f), (boneRotZ - 90.0f), (explSz - 0.85f), false, false, false);
+                // Check throttle and time to stop longFlame
+                int secToStop = MISC::GET_GAME_TIMER();
+                while (VExt::GetThrottleP(vehicle) < 0.1f && (MISC::GET_GAME_TIMER() - secToStop) < 1000) {
+                    WAIT(0);
+                }
+                GRAPHICS::STOP_PARTICLE_FX_LOOPED(longFlameHandle, false);
+                longFlameHandle = -1;
+            }
+}
+
 void CTurboScript::runPtfx(Vehicle vehicle, bool loud) {
     int numPtfxPlayed = 0;
 
@@ -278,18 +338,23 @@ void CTurboScript::runPtfx(Vehicle vehicle, bool loud) {
         //    { upPos.f[0], upPos.f[1], upPos.f[2] },
         //    0, 0, 255, 255);
 
-        Vector3 boneOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, { pos.f[0], pos.f[1], pos.f[2] });
-        Vector3 boneFwdOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, { forwardPos.f[0], forwardPos.f[1], forwardPos.f[2] });
-        Vector3 boneUpOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, { upPos.f[0], upPos.f[1], upPos.f[2] });
-        Vector3 boneRightOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, { rightPos.f[0], rightPos.f[1], rightPos.f[2] });
+        float posX = pos.f[0], posY = pos.f[1], posZ = pos.f[2]; 
+        float forwardPosX = forwardPos.f[0], forwardPosY = forwardPos.f[1], forwardPosZ = forwardPos.f[2];
+        float upPosX = upPos.f[0], upPosY = upPos.f[1], upPosZ = upPos.f[2];
+        float rightPosX = rightPos.f[0], rightPosY = rightPos.f[1], rightPosZ = rightPos.f[2];
+
+        Vector3 boneOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, posX, posY, posZ );
+        Vector3 boneFwdOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, forwardPosX, forwardPosY, forwardPosZ );
+        Vector3 boneUpOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, upPosX, upPosY, upPosZ );
+        Vector3 boneRightOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, rightPosX, rightPosY, rightPosZ );
+
+        float boneOffX = boneOff.x, boneOffY = boneOff.y, boneOffZ = boneOff.z;
 
         Vector3 relFwd = Normalize(boneFwdOff - boneOff);
         Vector3 relUp = Normalize(boneUpOff - boneOff);
 
         Vector3 boneRot =  RotationFromVectors(relFwd, relUp);
-        boneRot.x = rad2deg(boneRot.x);
-        boneRot.y = rad2deg(boneRot.y);
-        boneRot.z = rad2deg(boneRot.z);
+        float boneRotX = rad2deg(boneRot.x), boneRotY = rad2deg(boneRot.y), boneRotZ = rad2deg(boneRot.z);
 
         float explSz;
         if (loud) {
@@ -302,10 +367,9 @@ void CTurboScript::runPtfx(Vehicle vehicle, bool loud) {
             explSz = std::clamp(explSz, 0.75f, 1.25f);
         }
 
-        GRAPHICS::USE_PARTICLE_FX_ASSET("core");
-        GRAPHICS::START_PARTICLE_FX_NON_LOOPED_ON_ENTITY("veh_backfire", vehicle,
-            boneOff, boneRot, explSz, false, false, false);
-
+        // Separated ptfx call for modularity on fx and timing
+        firePtfx(vehicle, boneOffX, boneOffY, boneOffZ, boneRotX, boneRotY, boneRotZ, explSz);
+        
         numPtfxPlayed++;
     }
 
@@ -318,11 +382,21 @@ void CTurboScript::runPtfx(Vehicle vehicle, bool loud) {
                 continue;
 
             Vector3 bonePos = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(vehicle, boneIdx);
-            Vector3 boneRot{};
-            if (getGameVersion() >= 50) {
-                boneRot = ENTITY::GET_ENTITY_BONE_OBJECT_ROTATION(vehicle, boneIdx);
-            }
-            Vector3 boneOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, bonePos);
+
+            float bonePosX = bonePos.x;
+            float bonePosY = bonePos.y;
+            float bonePosZ = bonePos.z;
+
+            Vector3 boneRot = ENTITY::GET_ENTITY_BONE_OBJECT_ROTATION(vehicle, boneIdx);
+            Vector3 boneOff = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(vehicle, bonePosX, bonePosY, bonePosZ);
+
+            float boneOffX = boneOff.x;
+            float boneOffY = boneOff.y;
+            float boneOffZ = boneOff.z;
+
+            float boneRotX = boneRot.x;
+            float boneRotY = boneRot.y;
+            float boneRotZ = boneRot.z;
 
             float explSz;
             if (loud) {
@@ -335,9 +409,7 @@ void CTurboScript::runPtfx(Vehicle vehicle, bool loud) {
                 explSz = std::clamp(explSz, 0.75f, 1.25f);
             }
 
-            GRAPHICS::USE_PARTICLE_FX_ASSET("core");
-            GRAPHICS::START_PARTICLE_FX_NON_LOOPED_ON_ENTITY("veh_backfire", vehicle,
-                boneOff, boneRot, explSz, false, false, false);
+            firePtfx(vehicle, boneOffX, boneOffY, boneOffZ, boneRotX, boneRotY, boneRotZ, explSz);
         }
     }
 }

@@ -2,9 +2,9 @@ GTA V Turbo Fix
 =====================
 - Updated for 3095 (3179 still works)
 
-Forked from ikt32, Check the original for more info !!!
+Forked from ikt32, Check the original for more info
 
-Please read this all before downloading
+!Please read all of this before downloading!   Downloads is on this right side (search for Releases)  >>>>>>>
 
 Showcase:
 

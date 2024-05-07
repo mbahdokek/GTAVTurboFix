@@ -6,7 +6,7 @@ Forked from ikt32, Check the original for more info
 
 !Please read all of this before downloading!   Downloads is on this right side (search for Releases)  >>>>>>>
 
-Showcase:
+Video Showcase (What's New):
 
 [![](https://img.youtube.com/vi/kEQCRlDJv-w/hqdefault.jpg)](http://www.youtube.com/watch?v=kEQCRlDJv-w "Click to play on Youtube.com")
 
@@ -16,17 +16,19 @@ Showcase:
   also turned off version check for old games, so it's not compatible for game version older than 3095; some address updated from SHVDN source file
 - TurboScript.cpp : Added feature of multiple backfire effect 50-50 chance of veh_sanctus and weap_sm_bom,
   and then followed by modded blue/purple veh_backfire (credits to 13stewartc) which separated to the back a bit
-  and exp_sht_flame (thanks for the help of JulioNiB for finding Unknown3A0 for particle property) a flame burst fx for epic gritty look
+  and exp_sht_flame (thanks for the help of JulioNiB for finding Unknown3A0 for particle property) a flame burst fx for epic gritty look. 
   For compatibility with QuantV which has their own backfire effect, you can skip installing the custom ypt file so the script will fallback to original core/veh_backfire
 - Added 2 custom backfire sound kits (credit to [Zendo Revolusound Team](https://www.nexusmods.com/forzahorizon5/mods/86) from Forza Modding Scene, check em' out)
   ZendoDirty for street-modded cars, and ZendoClean for clean supercars
 
 ## Install / Usage
 
-2 Version available: The default/latest one (marked green latest) is modded with extra features that i've explained above. The other one is the original mod but with fixes only like above but no extra features
+2 Version available: The default/latest one (marked green latest) is modded with extra features as listed above. The other one is the original mod with fixes only but no extra features
 
 The modded one is packed with oiv because of custom ypt
 (No worries of conflict with core.ypt. It's standalone custom ypt, thanks to JulioNiB for the tutorial)
+
+Installation details written inside README, inside the .rar file
 
 ## Building
 

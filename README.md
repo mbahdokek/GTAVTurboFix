@@ -2,9 +2,9 @@ GTA V Turbo Fix
 =====================
 - Updated for 3095 (3179 still works)
 
-A script for Grand Theft Auto V, that fixes the broken turbo behavior.
-
 Forked from ikt32, Check the original for more info !!!
+
+Please read this all before downloading
 
 Showcase:
 
@@ -23,8 +23,10 @@ Showcase:
 
 ## Install / Usage
 
-Will be packed with oiv because of custom ypt
-(no worries of conflict it's standalone custom ypt, thanks to JulioNiB for the tutorial)
+2 Version available: The default/latest one (marked green latest) is modded with extra features that i've explained above. The other one is the original mod but with fixes only like above but no extra features
+
+The modded one is packed with oiv because of custom ypt
+(No worries of conflict with core.ypt. It's standalone custom ypt, thanks to JulioNiB for the tutorial)
 
 ## Building
 

@@ -8,7 +8,8 @@ Forked from ikt32, Check the original for more info
 
 Video Showcase (What's New):
 
-[![](https://cdn.discordapp.com/attachments/318715415188733954/1237464824963661855/image0.gif?ex=663bbe6d&is=663a6ced&hm=7203bccc549d7c06da01460dd04d2e5b49d9edfbc0f30af0c25c12c8a053890c&)](http://www.youtube.com/watch?v=kEQCRlDJv-w "Click to play on Youtube.com")
+[![](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdmsxczdmMzhodmZud21kMXBvdGhqbnVraXk0aG0xdWw3djl1NzA5eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kXhwmtMZ4EKzGCqvHf/giphy.gif)](http://www.youtube.com/watch?v=kEQCRlDJv-w "Click to play on Youtube.com")
+
 
 ## Changes
 - Patches.cpp: Changed the Turbo Limiter NOP patching to \xC7\x43\x7C\x00\x00\x80\x3F\x48\x8B\xCE, now boost can be set higher than 1.0 again

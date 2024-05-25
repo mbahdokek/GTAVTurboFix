@@ -21,6 +21,7 @@ Video Showcase (What's New):
   For compatibility with QuantV which has its own backfire effect, you can skip installing the custom ypt file so the script will fallback to the original core/veh_backfire
 - Added 2 custom backfire sound kits (credit to [Zendo Revolusound Team](https://www.nexusmods.com/forzahorizon5/mods/86) from Forza Modding Scene, check em' out)
   ZendoDirty for street-modded cars, and ZendoClean for clean supercars
+- BUG! i've only noticed it recently but there's a chance the script will crash if NPCS has turbo in their car if it happens the game still runs okay but the script wont be loaded until game restart
 
 ## Install / Usage
 

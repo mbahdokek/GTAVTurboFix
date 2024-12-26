@@ -1,4 +1,5 @@
-GTA V Turbo Fix
+GTA V Turbo Fix (mbahdokek quickfix)
+STATUS - NOW DEPRECATED, as ikt already working on his version, i'll close support for this. [Check his patreon](https://www.patreon.com/ikt) 
 =====================
 - Updated for 3095 (3179 still works)
 
